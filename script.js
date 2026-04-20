@@ -58,10 +58,10 @@ function initGeoCurrency() {
 function switchToUSD() {
     // Currency mapping: INR → USD (approximate for donation context)
     const conversions = {
-        '₹500': '$6',
-        '₹2,000': '$25',
-        '₹10,000': '$120',
-        '₹50,000+': '$600+',
+        '₹500': '$500',
+        '₹2,000': '$1,200',
+        '₹10,000': '$5,000',
+        '₹50,000+': '$10,000+',
         '₹70 Lakh': '$85,000',
         '₹40 Lakh': '$48,000',
         '₹30 Lakh': '$36,000',
@@ -93,13 +93,25 @@ function switchToUSD() {
         heroBadge.innerHTML = heroBadge.innerHTML.replace('₹2 Crore', '$240,000');
     }
 
-    // Update tier card descriptions to use USD
-    const tierDescriptions = {
-        '$6': 'Buys textbooks and study materials for one B.Ed/D.El.Ed student trainee',
-        '$25': 'Furnishes one seat in a classroom — desk, chair, and learning space for a future teacher',
-        '$120': 'Sponsors one semester of a B.Ed student\'s training — creating a certified teacher for a village school',
-        '$600+': 'Major contribution toward infrastructure — labs, library, or smart classroom setup. Your name on the donor wall.',
+    // Update tier titles and descriptions for high-ticket USD
+    const tierContent = {
+        '$500': { title: 'Teacher Sponsor', desc: 'Covers tuition and training for one B.Ed student for a full year.' },
+        '$1,200': { title: 'Degree Sponsor', desc: 'Sponsors a student\'s complete 2-year B.Ed journey until certified.' },
+        '$5,000': { title: 'Founding Member 🌟', desc: 'Funds the construction of one classroom. Plaque on the door.' },
+        '$10,000+': { title: 'Institute Pillar', desc: 'Funds a modern science/computer lab. Major recognition on the donor wall.' },
     };
+
+    document.querySelectorAll('.tier-card').forEach(card => {
+        const amountEl = card.querySelector('.tier-amount');
+        if (!amountEl) return;
+        const amount = amountEl.textContent.trim();
+        if (tierContent[amount]) {
+            const h3 = card.querySelector('h3');
+            const p = card.querySelector('p');
+            if (h3) h3.textContent = tierContent[amount].title;
+            if (p) p.textContent = tierContent[amount].desc;
+        }
+    });
 
     // Update tier button text
     document.querySelectorAll('.tier-btn').forEach(el => {

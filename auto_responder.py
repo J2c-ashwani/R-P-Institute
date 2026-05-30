@@ -60,7 +60,7 @@ def get_premium_pitch_html(first_name):
               </p>
               
               <p style="margin:0 0 20px;">
-                To assist you directly, I am opening up a limited number of premium, **1-on-1 Funding Strategy Consultations** next week.
+                To assist you directly, I am opening up a limited number of premium, **1-on-1 Government Grant & Funding Strategy Consultations** next week.
               </p>
               
               <!-- THE DEEP RESEARCH VALUE PROPOSITION -->
@@ -74,13 +74,13 @@ def get_premium_pitch_html(first_name):
               <!-- THE 3 DELIVERABLES -->
               <p style="margin:0 0 12px;font-weight:700;color:#ffffff;">During our call, you will receive:</p>
               <ul style="margin:0 0 24px;padding-left:20px;color:#c8cfe8;">
-                <li style="margin-bottom:8px;">A fully customized, pre-researched **B2B Funding Roadmap** for your business.</li>
+                <li style="margin-bottom:8px;">A fully customized, pre-researched **Government Grant & Funding Roadmap** for your business.</li>
                 <li style="margin-bottom:8px;">The exact top 3 grant or loan programs you qualify for with the highest probability of approval.</li>
                 <li style="margin-bottom:0;">A step-by-step documentation and filing plan to avoid costly compliance rejections.</li>
               </ul>
               
               <p style="margin:0 0 24px;">
-                Our fee for this deeply researched, custom strategy package is <strong style="color:#ffffff;">$199 CAD / USD</strong> (backed by our upfront research commitment, payable in either currency).
+                Our fee for this deeply researched, custom strategy package is <strong style="color:#ffffff;">$199 USD</strong> (backed by our upfront research commitment).
               </p>
               
               <!-- CTA BUTTON -->
@@ -97,12 +97,10 @@ def get_premium_pitch_html(first_name):
               
               <!-- 1-CLICK EDTECH PLATFORMS PLUG -->
               <p style="margin:0 0 16px;font-size:14px;color:#8f9ac2;">
-                In the meantime, feel free to test the core AI products built by our engineering division that power our custom data analysis models:
+                In the meantime, feel free to test the core AI models built by our engineering division that power our custom data analysis models:
               </p>
               
               <div style="background-color:#14163c;border-radius:8px;padding:12px 15px;margin-bottom:24px;border:1px solid #282b68;text-align:center;">
-                <a href="https://ai-neet.vercel.app/" style="display:inline-block;background-color:#2a82e4;color:#ffffff;font-size:12px;font-weight:700;text-decoration:none;padding:6px 12px;border-radius:4px;margin:3px;">🩺 AI NEET Coach</a>
-                <a href="https://upsc-150-guide.vercel.app/" style="display:inline-block;background-color:#10b981;color:#ffffff;font-size:12px;font-weight:700;text-decoration:none;padding:6px 12px;border-radius:4px;margin:3px;">📝 UPSC Guide</a>
                 <a href="https://twinmind-9l6x.onrender.com" style="display:inline-block;background-color:#764ba2;color:#ffffff;font-size:12px;font-weight:700;text-decoration:none;padding:6px 12px;border-radius:4px;margin:3px;">💻 TwinGenie AI</a>
               </div>
               
@@ -115,9 +113,9 @@ def get_premium_pitch_html(first_name):
           <!-- FOOTER -->
           <tr>
             <td style="background:#050510;padding:20px 40px;border-top:1px solid #1a1c44;text-align:left;color:#4f5c87;font-size:12px;line-height:1.6;">
-              <strong>Ashwani Kumar</strong><br>
+              <strong>Ashwani</strong><br>
               Lead Funding Strategist, FSI Digital<br>
-              <a href="https://fsidigital.ca" style="color:#38bdf8;text-decoration:none;">fsidigital.ca</a> | ashwani.jha.g@gmail.com
+              <a href="https://fsidigital.ca" style="color:#38bdf8;text-decoration:none;">fsidigital.ca</a> | ashwani@fsidigital.ca
             </td>
           </tr>
           
@@ -134,9 +132,9 @@ def get_premium_pitch_html(first_name):
 def send_pitch_email(server, recipient_email, first_name):
     """Sends the premium B2B consultation email."""
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Ashwani Kumar <{SENDER_EMAIL}>"
+    msg['From'] = f"Ashwani <{SENDER_EMAIL}>"
     msg['To'] = recipient_email
-    msg['Subject'] = "Eligibility Confirmed: Custom B2B Funding Strategy Session"
+    msg['Subject'] = "Eligibility Confirmed: Custom Business Grant & Funding Strategy Session"
     
     html_body = get_premium_pitch_html(first_name)
     msg.attach(MIMEText(html_body, 'html'))

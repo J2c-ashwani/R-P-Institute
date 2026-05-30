@@ -187,7 +187,7 @@ def main():
 
     # Extract name column if it exists
     name_col = None
-    for col in ['Name', 'Name ', 'First Name', 'FirstName', 'FullName', 'Full Name', 'name']:
+    for col in ['Name', 'Name/Company', 'Name ', 'First Name', 'FirstName', 'FullName', 'Full Name', 'name']:
         if col in df.columns:
             name_col = col
             break

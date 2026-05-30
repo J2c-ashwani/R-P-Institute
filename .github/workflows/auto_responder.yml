@@ -1,0 +1,49 @@
+name: Automated B2B Lead Auto-Responder
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Automatically runs every 30 minutes
+  workflow_dispatch:        # Allows you to manually trigger it with 1-click in GitHub UI
+
+jobs:
+  run-auto-responder:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # Allows GitHub Actions to push the updated sent logs back to your repo
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas requests
+
+    - name: Run Auto-Responder Script
+      env:
+        GMAIL_EMAIL: ${{ secrets.GMAIL_EMAIL }}
+        GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+      run: python auto_responder.py
+
+    - name: Commit and Push Sent Logs
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        
+        # Create file if it doesn't exist to prevent git error
+        touch auto_responder_sent.txt
+        git add auto_responder_sent.txt
+        
+        # Only commit and push if new emails were actually sent (changes exist)
+        if ! git diff --quiet auto_responder_sent.txt; then
+          git commit -m "auto-responder: update sent email logs [skip ci]"
+          git push
+        else
+          echo "No new emails sent. Skipping commit."
+        fi

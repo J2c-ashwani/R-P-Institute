@@ -18,7 +18,7 @@ CONSULTATION_LINK = "https://www.fsidigital.ca/consultation"
 
 # Replace this placeholder with your actual published Google Sheet CSV URL
 # (To get this: Google Sheets -> File -> Share -> Publish to Web -> Web Page dropdown -> select CSV -> Copy link)
-SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/[YOUR_SPREADSHEET_ID_HERE]/pub?output=csv"
+SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWQ6ih5-XHfhi84kmvgLDFJExwthL-HomBW5agTAcUtEU7RgpZI2_j6_yIP2a1_sCtsaRws-U7R6hm/pub?output=csv"
 
 SENT_LOG_FILE = "auto_responder_sent.txt"
 

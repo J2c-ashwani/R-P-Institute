@@ -200,14 +200,13 @@ def main():
     # 4. Filter for fresh, unsent leads
     fresh_leads = []
     
-    # Define our target start date (March 1, 2026) and cutoff (2 hours ago)
-    start_date = pd.to_datetime("2026-03-01 00:00:00")
+    # Define our target cutoff time (2 hours ago)
     now = pd.Timestamp.now()
     cutoff_time = now - pd.Timedelta(hours=2)
     
     print(f"⏰ Filters Active:")
-    print(f"   - Only leads created on or after: {start_date.strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"   - Only leads created before: {cutoff_time.strftime('%Y-%m-%d %H:%M:%S')} (at least 2 hours ago)")
+    print(f"   - Processing ALL historical leads in sheet (no start date limit).")
+    print(f"   - For fresh leads, only those created before: {cutoff_time.strftime('%Y-%m-%d %H:%M:%S')} (at least 2 hours ago)")
     print(f"   - Strict exclusion of all newsletter leads.")
     
     for _, row in df.iterrows():
@@ -240,9 +239,7 @@ def main():
                 if lead_time.tzinfo is not None:
                     lead_time = lead_time.tz_localize(None)
                 
-                # Verify lead is within March 1, 2026 and at least 2 hours old
-                if lead_time < start_date:
-                    continue
+                # Verify lead is at least 2 hours old
                 if lead_time > cutoff_time:
                     continue
             else:
@@ -278,8 +275,8 @@ def main():
                 with open(SENT_LOG_FILE, "a") as f:
                     f.write(lead["email"] + "\n")
                     
-                # Short 5-second sleep to prevent rapid-fire SMTP warnings
-                time.sleep(5)
+                # 15-second delay between emails to mimic human behavior and protect domain reputation
+                time.sleep(15)
             except Exception as e:
                 print(f"⚠️ Failed to send to {lead['email']}. Error: {e}")
                 

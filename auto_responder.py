@@ -60,21 +60,21 @@ def get_premium_pitch_html(first_name):
               </p>
               
               <p style="margin:0 0 20px;">
-                To assist you directly, I am opening up a limited number of premium, **1-on-1 Government Grant & Funding Strategy Consultations** next week.
+                To assist you directly, I am opening up a limited number of premium, <strong>1-on-1 Government Grant & Funding Strategy Consultations</strong> next week.
               </p>
               
               <!-- THE DEEP RESEARCH VALUE PROPOSITION -->
               <div style="background-color:#14163c;border-left:4px solid #38bdf8;border-radius:4px;padding:18px 20px;margin-bottom:24px;border-top:1px solid #282b68;border-right:1px solid #282b68;border-bottom:1px solid #282b68;">
                 <h4 style="margin:0 0 10px;color:#ffffff;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;">Why this is a premium, custom assessment:</h4>
                 <p style="margin:0;font-size:14px;color:#a0aec0;line-height:1.6;">
-                  This is a bespoke advisory service. Before we get on our 30-minute private Google Meet, our team spends **2 hours of custom research** specifically analyzing your business domain, local tax codes, and matching them against our proprietary database of active private and government programs.
+                  This is a bespoke advisory service. Before we get on our 30-minute private Google Meet, our team spends <strong>2 hours of custom research</strong> specifically analyzing your business domain, local tax codes, and matching them against our proprietary database of active private and government programs.
                 </p>
               </div>
               
               <!-- THE 3 DELIVERABLES -->
               <p style="margin:0 0 12px;font-weight:700;color:#ffffff;">During our call, you will receive:</p>
               <ul style="margin:0 0 24px;padding-left:20px;color:#c8cfe8;">
-                <li style="margin-bottom:8px;">A fully customized, pre-researched **Government Grant & Funding Roadmap** for your business.</li>
+                <li style="margin-bottom:8px;">A fully customized, pre-researched <strong>Government Grant & Funding Roadmap</strong> for your business.</li>
                 <li style="margin-bottom:8px;">The exact top 3 grant or loan programs you qualify for with the highest probability of approval.</li>
                 <li style="margin-bottom:0;">A step-by-step documentation and filing plan to avoid costly compliance rejections.</li>
               </ul>

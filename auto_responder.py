@@ -145,6 +145,24 @@ def send_pitch_email(server, recipient_email, first_name):
 def main():
     print("🚀 Running Cloud B2B Auto-Responder Daemon...")
     
+    # Check if current time is within US/Eastern Business Hours (Mon-Fri, 9am - 6pm EST)
+    try:
+        now_est = pd.Timestamp.now(tz='America/New_York')
+        day_of_week = now_est.dayofweek  # 0 is Monday, 6 is Sunday
+        hour = now_est.hour
+        
+        is_business_day = 0 <= day_of_week <= 4
+        is_business_hour = 9 <= hour <= 17
+        
+        if not (is_business_day and is_business_hour):
+            print(f"😴 Outside Business Hours in Target Market (US/Eastern):")
+            print(f"   - Current EST Time: {now_est.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+            print(f"   - Allowed: Monday to Friday, 9:00 AM - 6:00 PM EST.")
+            print(f"   - Leads will remain safely queued in your Google Sheet. Exiting cleanly.")
+            return
+    except Exception as e:
+        print(f"⚠️ Warning: Timezone check skipped due to error: {e}. Running anyway.")
+    
     # 1. Validate Secrets
     if not SENDER_EMAIL or not APP_PASSWORD:
         print("❌ Error: Missing GMAIL_EMAIL or GMAIL_APP_PASSWORD environment variables.")

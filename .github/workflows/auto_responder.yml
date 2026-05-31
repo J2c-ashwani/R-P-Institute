@@ -1,8 +1,8 @@
 name: Automated B2B Lead Auto-Responder
 
 on:
-  schedule:
-    - cron: '*/30 * * * *'  # Automatically runs every 30 minutes
+  # schedule:
+  #   - cron: '*/30 * * * *'  # Automatically runs every 30 minutes
   workflow_dispatch:        # Allows you to manually trigger it with 1-click in GitHub UI
 
 jobs:

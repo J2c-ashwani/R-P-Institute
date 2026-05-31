@@ -264,7 +264,7 @@ def main():
 
     # 5. Connect and Send Loop
     try:
-        server = smtplib.SMTP('smtp.zoho.com', 587)
+        server = smtplib.SMTP('smtp.zoho.in', 587)
         server.starttls()
         server.login(SENDER_EMAIL, APP_PASSWORD)
         

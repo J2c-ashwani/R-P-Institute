@@ -21,6 +21,7 @@ CONSULTATION_LINK = "https://www.fsidigital.ca/consultation"
 SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWQ6ih5-XHfhi84kmvgLDFJExwthL-HomBW5agTAcUtEU7RgpZI2_j6_yIP2a1_sCtsaRws-U7R6hm/pub?output=csv"
 
 SENT_LOG_FILE = "auto_responder_sent.txt"
+BATCH_SIZE = 10
 
 def get_premium_pitch_html(first_name):
     """Returns the high-converting $199 premium funding strategy session HTML template."""
@@ -285,6 +286,9 @@ def main():
         
         count = 0
         for lead in fresh_leads:
+            if count >= BATCH_SIZE:
+                print(f"🛑 Batch size limit of {BATCH_SIZE} reached for this execution cycle. Exiting cleanly.")
+                break
             try:
                 send_pitch_email(server, lead["email"], lead["first_name"])
                 count += 1
@@ -294,7 +298,8 @@ def main():
                     f.write(lead["email"] + "\n")
                     
                 # 15-second delay between emails to mimic human behavior and protect domain reputation
-                time.sleep(15)
+                if count < BATCH_SIZE:
+                    time.sleep(15)
             except Exception as e:
                 print(f"⚠️ Failed to send to {lead['email']}. Error: {e}")
                 

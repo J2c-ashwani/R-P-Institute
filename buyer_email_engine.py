@@ -17,7 +17,7 @@ CSV_FILE = "buyer_leads.csv"
 SENT_LOG_FILE = "buyer_sent_emails.txt"
 
 # Batch size per execution run (keeps triggers safe from timeouts and spam filters)
-BATCH_SIZE = 10
+BATCH_SIZE = 3
 
 SUBJECT_OPTIONS = [
     "Quick question about your lead pipeline",
@@ -304,51 +304,49 @@ def main():
     # Determine SMTP Host based on custom domain vs gmail
     smtp_host = "smtppro.zoho.in" if "fsidigital.ca" in SENDER_EMAIL.lower() else "smtp.gmail.com"
 
-    # 3. Connect and Send loop
-    try:
-        print(f"⚡ Connecting to {smtp_host} as {SENDER_EMAIL}...")
-        server = smtplib.SMTP(smtp_host, 587)
-        server.starttls()
-        server.login(SENDER_EMAIL, APP_PASSWORD)
-        
-        count = 0
-        for lead in fresh_leads:
-            email = str(lead[email_col]).strip().lower()
-            company = lead.get('Company', 'there')
-            if not company or str(company).lower() == 'nan':
-                company = "there"
-                
-            dm_name = lead.get('DecisionMakerName', 'Team')
-            if not dm_name or str(dm_name).lower() == 'nan':
-                dm_name = "Team"
-                
-            dm_role = lead.get('DecisionMakerRole', 'Grant Consulting Partner')
-            if not dm_role or str(dm_role).lower() == 'nan':
-                dm_role = "Grant Consulting Partner"
+    # 3. Connect and Send loop (Connection-Per-Email for robustness against Zoho spam blocks)
+    count = 0
+    for lead in fresh_leads:
+        email = str(lead[email_col]).strip().lower()
+        company = lead.get('Company', 'there')
+        if not company or str(company).lower() == 'nan':
+            company = "there"
+            
+        dm_name = lead.get('DecisionMakerName', 'Team')
+        if not dm_name or str(dm_name).lower() == 'nan':
+            dm_name = "Team"
+            
+        dm_role = lead.get('DecisionMakerRole', 'Grant Consulting Partner')
+        if not dm_role or str(dm_role).lower() == 'nan':
+            dm_role = "Grant Consulting Partner"
 
-            if count >= BATCH_SIZE:
-                print(f"🛑 Batch size limit of {BATCH_SIZE} reached for this execution cycle.")
-                break
+        if count >= BATCH_SIZE:
+            print(f"🛑 Batch size limit of {BATCH_SIZE} reached for this execution cycle.")
+            break
+            
+        print(f"⚡ Connecting to {smtp_host} as {SENDER_EMAIL} to send B2B email to {email}...")
+        try:
+            server = smtplib.SMTP(smtp_host, 587, timeout=15)
+            server.starttls()
+            server.login(SENDER_EMAIL, APP_PASSWORD)
+            
+            send_b2b_email(server, email, company, dm_name, dm_role, SENDER_EMAIL)
+            server.quit()
+            
+            count += 1
+            
+            # Append immediately to local logs to protect against sudden failures
+            with open(SENT_LOG_FILE, "a") as f:
+                f.write(email + "\n")
                 
-            try:
-                send_b2b_email(server, email, company, dm_name, dm_role, SENDER_EMAIL)
-                count += 1
-                
-                # Append immediately to local logs to protect against sudden failures
-                with open(SENT_LOG_FILE, "a") as f:
-                    f.write(email + "\n")
-                    
-                # 15-second spam-protection delay between sends
-                if count < BATCH_SIZE:
-                    time.sleep(15)
-            except Exception as e:
-                print(f"⚠️ Failed to send B2B email to {email}. Error: {e}")
-                
-        server.quit()
-        print(f"\n🎉 SUCCESS: Automated B2B batch completed! Sent {count} emails.")
-        
-    except Exception as e:
-        print(f"❌ SMTP connection failure: {e}")
+            # 15-second spam-protection delay between sends
+            if count < BATCH_SIZE:
+                time.sleep(15)
+        except Exception as e:
+            print(f"⚠️ Failed to send B2B email to {email}. Error: {e}")
+            time.sleep(5)
+            
+    print(f"\n🎉 SUCCESS: Automated B2B batch completed! Sent {count} emails.")
 
 if __name__ == "__main__":
     main()

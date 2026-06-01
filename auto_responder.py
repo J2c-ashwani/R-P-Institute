@@ -22,7 +22,7 @@ CONSULTATION_LINK = "https://www.fsidigital.ca/consultation"
 SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWQ6ih5-XHfhi84kmvgLDFJExwthL-HomBW5agTAcUtEU7RgpZI2_j6_yIP2a1_sCtsaRws-U7R6hm/pub?output=csv"
 
 SENT_LOG_FILE = "auto_responder_sent.txt"
-BATCH_SIZE = 10
+BATCH_SIZE = 3
 
 # FIX #1: A/B Subject Lines — short, human, curiosity-driven (avoids spam triggers)
 B2C_SUBJECT_OPTIONS = [
@@ -403,36 +403,36 @@ def main():
         print("🎉 No new leads to email. Exiting safely.")
         return
 
-    # 5. Connect and Send Loop
-    try:
-        server = smtplib.SMTP('smtppro.zoho.in', 587)
-        server.starttls()
-        server.login(SENDER_EMAIL, APP_PASSWORD)
-        
-        count = 0
-        for lead in fresh_leads:
-            if count >= BATCH_SIZE:
-                print(f"🛑 Batch size limit of {BATCH_SIZE} reached for this execution cycle. Exiting cleanly.")
-                break
-            try:
-                send_pitch_email(server, lead["email"], lead["first_name"])
-                count += 1
+    # 5. Connect and Send Loop (Connection-Per-Email for robustness against Zoho spam blocks)
+    count = 0
+    for lead in fresh_leads:
+        if count >= BATCH_SIZE:
+            print(f"🛑 Batch size limit of {BATCH_SIZE} reached for this execution cycle. Exiting cleanly.")
+            break
+            
+        print(f"⚡ Connecting to Zoho SMTP to send response to {lead['email']}...")
+        try:
+            server = smtplib.SMTP('smtppro.zoho.in', 587, timeout=15)
+            server.starttls()
+            server.login(SENDER_EMAIL, APP_PASSWORD)
+            
+            send_pitch_email(server, lead["email"], lead["first_name"])
+            server.quit()
+            
+            count += 1
+            
+            # Append immediately to the local log file
+            with open(SENT_LOG_FILE, "a") as f:
+                f.write(lead["email"] + "\n")
                 
-                # Append immediately to the local log file
-                with open(SENT_LOG_FILE, "a") as f:
-                    f.write(lead["email"] + "\n")
-                    
-                # 15-second delay between emails to mimic human behavior and protect domain reputation
-                if count < BATCH_SIZE:
-                    time.sleep(15)
-            except Exception as e:
-                print(f"⚠️ Failed to send to {lead['email']}. Error: {e}")
-                
-        server.quit()
-        print(f"\n🎉 SUCCESS: Automated response completed! Emailed {count} new leads.")
-        
-    except Exception as e:
-        print(f"❌ SMTP connection failure: {e}")
+            # 15-second delay between emails to mimic human behavior and protect domain reputation
+            if count < BATCH_SIZE:
+                time.sleep(15)
+        except Exception as e:
+            print(f"⚠️ Failed to send to {lead['email']}. Error: {e}")
+            time.sleep(5)
+            
+    print(f"\n🎉 SUCCESS: Automated response completed! Emailed {count} new leads.")
 
 if __name__ == "__main__":
     main()

@@ -38,12 +38,9 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         
-        # Create file if it doesn't exist to prevent git error
-        touch buyer_sent_emails.txt
-        git add buyer_sent_emails.txt
-        
-        # Only commit and push if new B2B emails were actually sent (changes exist)
-        if ! git diff --quiet buyer_sent_emails.txt; then
+        # Only commit and push if the log file has actual changes (modified or untracked)
+        if [ -n "$(git status --porcelain buyer_sent_emails.txt)" ]; then
+          git add buyer_sent_emails.txt
           git commit -m "b2b-outreach: update B2B sent email logs [skip ci]"
           git push
         else

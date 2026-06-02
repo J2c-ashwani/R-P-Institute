@@ -29,6 +29,8 @@ jobs:
       env:
         GMAIL_EMAIL: ${{ secrets.GMAIL_EMAIL }}
         GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        ADVISORS_EMAIL: ${{ secrets.ADVISORS_EMAIL }}
+        ADVISORS_APP_PASSWORD: ${{ secrets.ADVISORS_APP_PASSWORD }}
       run: python auto_responder.py
 
     - name: Commit and Push Sent Logs

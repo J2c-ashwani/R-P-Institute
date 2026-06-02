@@ -10,9 +10,24 @@ from email.mime.text import MIMEText
 # ==========================================
 # 🛑 CONFIGURATION & SECRETS
 # ==========================================
-# GitHub Actions feeds these securely from your repository secrets
-SENDER_EMAIL = os.environ.get("GMAIL_EMAIL")
-APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
+# SENDER ACCOUNTS (Supports Inbox Rotation to distribute B2C load)
+ACCOUNTS = []
+if os.environ.get("GMAIL_EMAIL") and os.environ.get("GMAIL_APP_PASSWORD"):
+    ACCOUNTS.append({
+        "email": os.environ.get("GMAIL_EMAIL"),
+        "password": os.environ.get("GMAIL_APP_PASSWORD"),
+        "display_name": "Ashwani"
+    })
+if os.environ.get("ADVISORS_EMAIL") and os.environ.get("ADVISORS_APP_PASSWORD"):
+    ACCOUNTS.append({
+        "email": os.environ.get("ADVISORS_EMAIL"),
+        "password": os.environ.get("ADVISORS_APP_PASSWORD"),
+        "display_name": "Advisors"
+    })
+
+# Fallback for individual tests/scenarios
+SENDER_EMAIL = ACCOUNTS[0]["email"] if ACCOUNTS else os.environ.get("GMAIL_EMAIL")
+APP_PASSWORD = ACCOUNTS[0]["password"] if ACCOUNTS else os.environ.get("GMAIL_APP_PASSWORD")
 
 # Your Premium Consultation Landing Page Link (handles CAD/USD via PayPal Personal)
 CONSULTATION_LINK = "https://www.fsidigital.ca/consultation"
@@ -252,13 +267,13 @@ def get_premium_pitch_html(first_name):
 """
     return html
 
-def send_pitch_email(server, recipient_email, first_name):
+def send_pitch_email(server, recipient_email, first_name, sender_email, sender_display_name):
     """Sends the premium consultation pitch email with A/B subject line testing."""
     # FIX #1: Rotate subject lines dynamically with personalization
     subject = random.choice(B2C_SUBJECT_OPTIONS).replace("{first_name}", first_name or "there")
     
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Ashwani <{SENDER_EMAIL}>"
+    msg['From'] = f"{sender_display_name} <{sender_email}>"
     msg['To'] = recipient_email
     msg['Subject'] = subject
     
@@ -266,7 +281,7 @@ def send_pitch_email(server, recipient_email, first_name):
     msg.attach(MIMEText(html_body, 'html'))
     
     server.send_message(msg)
-    print(f"📧 [AUTO-RESPONDER] Sent premium pitch to {recipient_email} (Name: {first_name}) | Subject: {subject}")
+    print(f"📧 [AUTO-RESPONDER] Sent premium pitch to {recipient_email} (Name: {first_name}) | Subject: {subject} | From: {sender_display_name} <{sender_email}>")
 
 def main():
     print("🚀 Running Cloud B2B Auto-Responder Daemon...")
@@ -403,20 +418,30 @@ def main():
         print("🎉 No new leads to email. Exiting safely.")
         return
 
-    # 5. Connect and Send Loop (Connection-Per-Email for robustness against Zoho spam blocks)
+    # 5. Connect and Send Loop (Connection-Per-Email with Inbox Rotation for robustness)
+    if not ACCOUNTS:
+        print("❌ Error: No sender accounts loaded from environment secrets.")
+        return
+        
     count = 0
     for lead in fresh_leads:
         if count >= BATCH_SIZE:
             print(f"🛑 Batch size limit of {BATCH_SIZE} reached for this execution cycle. Exiting cleanly.")
             break
             
-        print(f"⚡ Connecting to Zoho SMTP to send response to {lead['email']}...")
+        # Rotate accounts 50/50 to distribute sending load
+        account = ACCOUNTS[count % len(ACCOUNTS)]
+        sender_email = account["email"]
+        app_password = account["password"]
+        sender_display_name = account["display_name"]
+        
+        print(f"⚡ Connecting to Zoho SMTP as {sender_display_name} ({sender_email}) to send response to {lead['email']}...")
         try:
             server = smtplib.SMTP('smtppro.zoho.in', 587, timeout=15)
             server.starttls()
-            server.login(SENDER_EMAIL, APP_PASSWORD)
+            server.login(sender_email, app_password)
             
-            send_pitch_email(server, lead["email"], lead["first_name"])
+            send_pitch_email(server, lead["email"], lead["first_name"], sender_email, sender_display_name)
             server.quit()
             
             count += 1

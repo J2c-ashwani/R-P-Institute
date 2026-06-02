@@ -42,7 +42,8 @@ jobs:
         if [ -n "$(git status --porcelain auto_responder_sent.txt)" ]; then
           git add auto_responder_sent.txt
           git commit -m "auto-responder: update sent email logs [skip ci]"
-          git push
+          git pull --rebase origin main
+          git push origin main
         else
           echo "No new emails sent. Skipping commit."
         fi

@@ -42,7 +42,8 @@ jobs:
         if [ -n "$(git status --porcelain buyer_sent_emails.txt)" ]; then
           git add buyer_sent_emails.txt
           git commit -m "b2b-outreach: update B2B sent email logs [skip ci]"
-          git push
+          git pull --rebase origin main
+          git push origin main
         else
           echo "No new B2B emails sent. Skipping commit."
         fi

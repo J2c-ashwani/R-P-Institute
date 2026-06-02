@@ -2,7 +2,7 @@ name: Automated B2B Buyer Outreach
 
 on:
   schedule:
-    - cron: '0 14-20/2 * * 1-5'  # Automatically runs every 2 hours during US/Eastern business hours (10 AM - 4 PM EDT), Mon-Fri
+    - cron: '*/30 14-20 * * 1-5'  # Automatically runs every 30 minutes during US/Eastern business hours (10 AM - 4 PM EDT), Mon-Fri
   workflow_dispatch:            # Allows you to manually trigger it with 1-click in GitHub UI
 
 jobs:

@@ -17,7 +17,7 @@ CSV_FILE = "buyer_leads.csv"
 SENT_LOG_FILE = "buyer_sent_emails.txt"
 
 # Batch size per execution run (keeps triggers safe from timeouts and spam filters)
-BATCH_SIZE = 3
+BATCH_SIZE = 6
 
 SUBJECT_OPTIONS = [
     "Quick question about your lead pipeline",

@@ -9,9 +9,24 @@ from email.mime.text import MIMEText
 # ==========================================
 # 🛑 CONFIGURATION & SECRETS
 # ==========================================
-# Look for custom B2B outreach credentials first, fallback to standard GMAIL or defaults
-SENDER_EMAIL = os.environ.get("B2B_EMAIL") or os.environ.get("GMAIL_EMAIL") or "fsidigital.usa@gmail.com"
-APP_PASSWORD = os.environ.get("B2B_APP_PASSWORD") or os.environ.get("GMAIL_APP_PASSWORD") or "ylfzoakplpejhptu"
+# SENDER ACCOUNTS (Supports B2B Inbox Rotation to distribute B2B outreach load)
+ACCOUNTS = []
+if os.environ.get("B2B_EMAIL") and os.environ.get("B2B_APP_PASSWORD"):
+    ACCOUNTS.append({
+        "email": os.environ.get("B2B_EMAIL"),
+        "password": os.environ.get("B2B_APP_PASSWORD"),
+        "display_name": "Ashwani Kumar"
+    })
+if os.environ.get("PARTNERS_EMAIL") and os.environ.get("PARTNERS_APP_PASSWORD"):
+    ACCOUNTS.append({
+        "email": os.environ.get("PARTNERS_EMAIL"),
+        "password": os.environ.get("PARTNERS_APP_PASSWORD"),
+        "display_name": "Partners FSI Digital"
+    })
+
+# Fallback for individual tests/scenarios
+SENDER_EMAIL = ACCOUNTS[0]["email"] if ACCOUNTS else os.environ.get("B2B_EMAIL") or "fsidigital.usa@gmail.com"
+APP_PASSWORD = ACCOUNTS[0]["password"] if ACCOUNTS else os.environ.get("B2B_APP_PASSWORD") or "ylfzoakplpejhptu"
 
 CSV_FILE = "buyer_leads.csv"
 SENT_LOG_FILE = "buyer_sent_emails.txt"
@@ -227,12 +242,12 @@ def get_b2b_html_body(company_name, dm_name, dm_role, sender_email):
 """
     return html
 
-def send_b2b_email(server, recipient_email, company_name, dm_name, dm_role, sender_email):
+def send_b2b_email(server, recipient_email, company_name, dm_name, dm_role, sender_email, sender_display_name):
     """Constructs and sends a premium B2B cold email."""
     subject = random.choice(SUBJECT_OPTIONS).replace("{company_name}", company_name or "your firm")
     
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Ashwani Kumar <{sender_email}>"
+    msg['From'] = f"{sender_display_name} <{sender_email}>"
     msg['To'] = recipient_email
     msg['Subject'] = subject
     
@@ -240,7 +255,7 @@ def send_b2b_email(server, recipient_email, company_name, dm_name, dm_role, send
     msg.attach(MIMEText(html_body, 'html'))
     
     server.send_message(msg)
-    print(f"📧 [B2B] Sent B2B pitch to {recipient_email} (Target: {dm_name} at {company_name}) | Subject: {subject}")
+    print(f"📧 [B2B] Sent B2B pitch to {recipient_email} (Target: {dm_name} at {company_name}) | Subject: {subject} | From: {sender_display_name} <{sender_email}>")
 
 def main():
     print("🚀 Starting the FSI Digital B2B Sales Engine...")
@@ -301,10 +316,11 @@ def main():
         print("🎉 No new B2B leads to contact. Exiting cleanly.")
         return
 
-    # Determine SMTP Host based on custom domain vs gmail
-    smtp_host = "smtppro.zoho.in" if "fsidigital.ca" in SENDER_EMAIL.lower() else "smtp.gmail.com"
-
-    # 3. Connect and Send loop (Connection-Per-Email for robustness against Zoho spam blocks)
+    # 3. Connect and Send loop (Connection-Per-Email with Inbox Rotation for robustness)
+    if not ACCOUNTS:
+        print("❌ Error: No B2B sender accounts loaded from environment secrets.")
+        return
+        
     count = 0
     for lead in fresh_leads:
         email = str(lead[email_col]).strip().lower()
@@ -324,13 +340,22 @@ def main():
             print(f"🛑 Batch size limit of {BATCH_SIZE} reached for this execution cycle.")
             break
             
-        print(f"⚡ Connecting to {smtp_host} as {SENDER_EMAIL} to send B2B email to {email}...")
+        # Rotate B2B accounts 50/50 to distribute sending load
+        account = ACCOUNTS[count % len(ACCOUNTS)]
+        sender_email = account["email"]
+        app_password = account["password"]
+        sender_display_name = account["display_name"]
+        
+        # Determine SMTP Host based on custom domain vs gmail
+        smtp_host = "smtppro.zoho.in" if "fsidigital.ca" in sender_email.lower() else "smtp.gmail.com"
+        
+        print(f"⚡ Connecting to {smtp_host} as {sender_display_name} ({sender_email}) to send B2B email to {email}...")
         try:
             server = smtplib.SMTP(smtp_host, 587, timeout=15)
             server.starttls()
-            server.login(SENDER_EMAIL, APP_PASSWORD)
+            server.login(sender_email, app_password)
             
-            send_b2b_email(server, email, company, dm_name, dm_role, SENDER_EMAIL)
+            send_b2b_email(server, email, company, dm_name, dm_role, sender_email, sender_display_name)
             server.quit()
             
             count += 1

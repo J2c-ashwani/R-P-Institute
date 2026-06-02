@@ -357,14 +357,16 @@ def main():
             break
 
     # 4. Filter for fresh, unsent leads
-    fresh_leads = []
+    fresh_new_leads = []  # >= May 1, 2026
+    fresh_old_leads = []  # < May 1, 2026
     
     # Define our target cutoff time (2 hours ago)
     now = pd.Timestamp.now()
     cutoff_time = now - pd.Timedelta(hours=2)
+    cutoff_date = pd.to_datetime("2026-05-01")
     
     print(f"⏰ Filters Active:")
-    print(f"   - Processing ALL historical leads in sheet (no start date limit).")
+    print(f"   - Split processing: New leads (>= May 1, 2026) send from advisors@, Historical leads (< May 1, 2026) send from ashwani@.")
     print(f"   - For fresh leads, only those created before: {cutoff_time.strftime('%Y-%m-%d %H:%M:%S')} (at least 2 hours ago)")
     print(f"   - Strict exclusion of all newsletter leads.")
     
@@ -391,6 +393,7 @@ def main():
             continue
             
         # Date & 2-Hour Time Delay Filtering
+        lead_is_new = False
         if timestamp_col:
             lead_time = pd.to_datetime(row[timestamp_col], errors='coerce')
             if pd.notnull(lead_time):
@@ -401,6 +404,9 @@ def main():
                 # Verify lead is at least 2 hours old
                 if lead_time > cutoff_time:
                     continue
+                    
+                if lead_time >= cutoff_date:
+                    lead_is_new = True
             else:
                 # If there's a timestamp column but it's blank/unparseable, skip to be safe.
                 continue
@@ -410,54 +416,100 @@ def main():
             name = "there"
             
         first_name = name.split()[0].capitalize()
-        fresh_leads.append({"email": email, "first_name": first_name})
+        lead_info = {"email": email, "first_name": first_name}
+        
+        if lead_is_new:
+            fresh_new_leads.append(lead_info)
+        else:
+            fresh_old_leads.append(lead_info)
 
-    print(f"🎯 Found {len(fresh_leads)} new fresh leads needing auto-response.")
+    print(f"🎯 Lead Segmentation Results:")
+    print(f"   - NEW Leads (>= May 1, 2026): {len(fresh_new_leads)} pending.")
+    print(f"   - HISTORICAL Leads (< May 1, 2026): {len(fresh_old_leads)} pending.")
     
-    if not fresh_leads:
-        print("🎉 No new leads to email. Exiting safely.")
+    if not fresh_new_leads and not fresh_old_leads:
+        print("🎉 No new or historical leads to email. Exiting safely.")
         return
 
-    # 5. Connect and Send Loop (Connection-Per-Email with Inbox Rotation for robustness)
-    if not ACCOUNTS:
-        print("❌ Error: No sender accounts loaded from environment secrets.")
-        return
-        
-    count = 0
-    for lead in fresh_leads:
-        if count >= BATCH_SIZE:
-            print(f"🛑 Batch size limit of {BATCH_SIZE} reached for this execution cycle. Exiting cleanly.")
-            break
-            
-        # Rotate accounts 50/50 to distribute sending load
-        account = ACCOUNTS[count % len(ACCOUNTS)]
-        sender_email = account["email"]
-        app_password = account["password"]
-        sender_display_name = account["display_name"]
-        
-        print(f"⚡ Connecting to Zoho SMTP as {sender_display_name} ({sender_email}) to send response to {lead['email']}...")
-        try:
-            server = smtplib.SMTP('smtppro.zoho.in', 587, timeout=15)
-            server.starttls()
-            server.login(sender_email, app_password)
-            
-            send_pitch_email(server, lead["email"], lead["first_name"], sender_email, sender_display_name)
-            server.quit()
-            
-            count += 1
-            
-            # Append immediately to the local log file
-            with open(SENT_LOG_FILE, "a") as f:
-                f.write(lead["email"] + "\n")
+    # 5. Connect and Send Loop for NEW Leads (using Advisors account to keep fresh leads instant!)
+    new_count = 0
+    advisors_email = os.environ.get("ADVISORS_EMAIL")
+    advisors_password = os.environ.get("ADVISORS_APP_PASSWORD")
+    
+    if fresh_new_leads and advisors_email and advisors_password:
+        print(f"\n🔥 Processing up to {BATCH_SIZE} NEW leads using advisors@fsidigital.ca...")
+        for lead in fresh_new_leads:
+            if new_count >= BATCH_SIZE:
+                print(f"🛑 New lead batch size limit of {BATCH_SIZE} reached.")
+                break
                 
-            # 15-second delay between emails to mimic human behavior and protect domain reputation
-            if count < BATCH_SIZE:
-                time.sleep(15)
-        except Exception as e:
-            print(f"⚠️ Failed to send to {lead['email']}. Error: {e}")
-            time.sleep(5)
+            print(f"⚡ Connecting to Zoho SMTP as Advisors ({advisors_email}) to send response to NEW lead {lead['email']}...")
+            try:
+                server = smtplib.SMTP('smtppro.zoho.in', 587, timeout=15)
+                server.starttls()
+                server.login(advisors_email, advisors_password)
+                
+                send_pitch_email(server, lead["email"], lead["first_name"], advisors_email, "Advisors")
+                server.quit()
+                
+                new_count += 1
+                
+                # Append immediately to the local log file
+                with open(SENT_LOG_FILE, "a") as f:
+                    f.write(lead["email"] + "\n")
+                    
+                # 15-second delay between emails to mimic human behavior and protect domain reputation
+                if new_count < BATCH_SIZE:
+                    time.sleep(15)
+            except Exception as e:
+                print(f"⚠️ Failed to send to NEW lead {lead['email']}. Error: {e}")
+                time.sleep(5)
+    else:
+        if not fresh_new_leads:
+            print("ℹ️ No new leads (>= May 1, 2026) to process.")
+        else:
+            print("⚠️ Skipping NEW leads because ADVISORS_EMAIL or ADVISORS_APP_PASSWORD secrets are not configured on GitHub yet.")
+
+    # 6. Connect and Send Loop for HISTORICAL Leads (using Ashwani account to steadily clear the backlog!)
+    old_count = 0
+    ashwani_email = os.environ.get("GMAIL_EMAIL")
+    ashwani_password = os.environ.get("GMAIL_APP_PASSWORD")
+    
+    if fresh_old_leads and ashwani_email and ashwani_password:
+        print(f"\n🕰️ Processing up to {BATCH_SIZE} HISTORICAL leads using ashwani@fsidigital.ca...")
+        for lead in fresh_old_leads:
+            if old_count >= BATCH_SIZE:
+                print(f"🛑 Historical lead batch size limit of {BATCH_SIZE} reached.")
+                break
+                
+            print(f"⚡ Connecting to Zoho SMTP as Ashwani ({ashwani_email}) to send response to HISTORICAL lead {lead['email']}...")
+            try:
+                server = smtplib.SMTP('smtppro.zoho.in', 587, timeout=15)
+                server.starttls()
+                server.login(ashwani_email, ashwani_password)
+                
+                send_pitch_email(server, lead["email"], lead["first_name"], ashwani_email, "Ashwani")
+                server.quit()
+                
+                old_count += 1
+                
+                # Append immediately to the local log file
+                with open(SENT_LOG_FILE, "a") as f:
+                    f.write(lead["email"] + "\n")
+                    
+                # 15-second delay between emails to mimic human behavior and protect domain reputation
+                if old_count < BATCH_SIZE:
+                    time.sleep(15)
+            except Exception as e:
+                print(f"⚠️ Failed to send to HISTORICAL lead {lead['email']}. Error: {e}")
+                time.sleep(5)
+    else:
+        if not fresh_old_leads:
+            print("ℹ️ No historical leads (< May 1, 2026) to process.")
+        else:
+            print("⚠️ Skipping HISTORICAL leads because GMAIL_EMAIL or GMAIL_APP_PASSWORD secrets are not configured on GitHub.")
             
-    print(f"\n🎉 SUCCESS: Automated response completed! Emailed {count} new leads.")
+    print(f"\n🎉 SUCCESS: Automated response run completed! Emailed {new_count} new leads and {old_count} historical leads.")
 
 if __name__ == "__main__":
     main()

@@ -369,11 +369,20 @@ def main():
     print(f"   - Split processing: New leads (>= May 1, 2026) send from advisors@, Historical leads (< May 1, 2026) send from ashwani@.")
     print(f"   - For fresh leads, only those created before: {cutoff_time.strftime('%Y-%m-%d %H:%M:%S')} (at least 2 hours ago)")
     print(f"   - Strict exclusion of all newsletter leads.")
-    
+    seen_emails_this_run = set()
     for _, row in df.iterrows():
         email = str(row[email_col]).strip().lower()
         if not email or '@' not in email or 'nan' in email:
             continue
+            
+        # Exclude fake/test domains to protect sender reputation and prevent bounces
+        if any(domain in email for domain in ['mailinator.com', 'test.com', 'example.com', 'tempmail.com']):
+            continue
+            
+        # Avoid duplicate processing of the same email in the same execution run
+        if email in seen_emails_this_run:
+            continue
+        seen_emails_this_run.add(email)
             
         # Robust Newsletter Filtering - scan all columns for newsletter/subscriber indicators
         is_newsletter_subscriber = False

@@ -38,6 +38,8 @@ SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWQ6ih5-XHfhi8
 
 SENT_LOG_FILE = "auto_responder_sent.txt"
 BATCH_SIZE = 3
+DAILY_CAP = 30  # Safety limit for Zoho SMTP (emails/day per account)
+
 
 # FIX #1: A/B Subject Lines — short, human, curiosity-driven (avoids spam triggers)
 B2C_SUBJECT_OPTIONS = [
@@ -267,6 +269,37 @@ def get_premium_pitch_html(first_name):
 """
     return html
 
+def check_daily_sending_limit(log_file, sender_email):
+    """
+    Checks how many emails were sent by a specific sender_email in the last 24 hours.
+    Returns the count of sent emails.
+    """
+    if not os.path.exists(log_file):
+        return 0
+        
+    count = 0
+    now = pd.Timestamp.now(tz='UTC')
+    with open(log_file, "r") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            parts = line.split(',')
+            if len(parts) >= 3:
+                try:
+                    logged_sender = parts[2].strip().lower()
+                    if logged_sender == sender_email.lower():
+                        timestamp = pd.to_datetime(parts[1].strip())
+                        if timestamp.tzinfo is None:
+                            timestamp = timestamp.tz_localize('UTC')
+                        else:
+                            timestamp = timestamp.tz_convert('UTC')
+                        if (now - timestamp).total_seconds() < 86400:
+                            count += 1
+                except Exception:
+                    pass
+    return count
+
 def send_pitch_email(server, recipient_email, first_name, sender_email, sender_display_name):
     """Sends the premium consultation pitch email with A/B subject line testing."""
     # FIX #1: Rotate subject lines dynamically with personalization
@@ -313,10 +346,17 @@ def main():
         print("❌ Error: You must replace SPREADSHEET_ID in SHEET_CSV_URL before running.")
         return
 
-    # 2. Load the sent emails log
+    # 2. Load the sent emails log (handles backward compatibility with plain emails)
+    sent_emails = set()
     if os.path.exists(SENT_LOG_FILE):
         with open(SENT_LOG_FILE, "r") as f:
-            sent_emails = set(line.strip() for line in f if line.strip())
+            for line in f:
+                line = line.strip().lower()
+                if not line or line.startswith('#'):
+                    continue
+                parts = line.split(',')
+                email = parts[0].strip()
+                sent_emails.add(email)
     else:
         sent_emails = set()
         
@@ -446,72 +486,92 @@ def main():
     advisors_password = os.environ.get("ADVISORS_APP_PASSWORD")
     
     if fresh_new_leads and advisors_email and advisors_password:
-        print(f"\n🔥 Processing up to {BATCH_SIZE} NEW leads using advisors@fsidigital.ca...")
-        for lead in fresh_new_leads:
-            if new_count >= BATCH_SIZE:
-                print(f"🛑 New lead batch size limit of {BATCH_SIZE} reached.")
-                break
-                
-            print(f"⚡ Connecting to Zoho SMTP as Advisors ({advisors_email}) to send response to NEW lead {lead['email']}...")
-            try:
-                server = smtplib.SMTP('smtppro.zoho.in', 587, timeout=15)
-                server.starttls()
-                server.login(advisors_email, advisors_password)
-                
-                send_pitch_email(server, lead["email"], lead["first_name"], advisors_email, "Advisors")
-                server.quit()
-                
-                new_count += 1
-                
-                # Append immediately to the local log file
-                with open(SENT_LOG_FILE, "a") as f:
-                    f.write(lead["email"] + "\n")
+        sent_today = check_daily_sending_limit(SENT_LOG_FILE, advisors_email)
+        print(f"📊 Daily sending audit: Advisors ({advisors_email}) has sent {sent_today}/{DAILY_CAP} emails in the last 24 hours.")
+        if sent_today >= DAILY_CAP:
+            print(f"🛑 Safe cap reached: Advisors ({advisors_email}) reached daily limit of {DAILY_CAP} emails. Skipping new leads batch.")
+        else:
+            allowed_to_send = min(BATCH_SIZE, DAILY_CAP - sent_today)
+            print(f"\n🔥 Processing up to {allowed_to_send} NEW leads using advisors@fsidigital.ca (within daily cap of {DAILY_CAP})...")
+            for lead in fresh_new_leads:
+                if new_count >= allowed_to_send:
+                    print(f"🛑 New lead batch size limit of {allowed_to_send} reached.")
+                    break
                     
-                # 15-second delay between emails to mimic human behavior and protect domain reputation
-                if new_count < BATCH_SIZE:
-                    time.sleep(15)
-            except Exception as e:
-                print(f"⚠️ Failed to send to NEW lead {lead['email']}. Error: {e}")
-                time.sleep(5)
+                print(f"⚡ Connecting to Zoho SMTP as Advisors ({advisors_email}) to send response to NEW lead {lead['email']}...")
+                try:
+                    server = smtplib.SMTP('smtppro.zoho.in', 587, timeout=15)
+                    server.starttls()
+                    server.login(advisors_email, advisors_password)
+                    
+                    send_pitch_email(server, lead["email"], lead["first_name"], advisors_email, "Advisors")
+                    server.quit()
+                    
+                    new_count += 1
+                    
+                    # Append immediately to the local log file in format: email,timestamp,sender
+                    timestamp_str = pd.Timestamp.now(tz='UTC').isoformat()
+                    with open(SENT_LOG_FILE, "a") as f:
+                        f.write(f"{lead['email']},{timestamp_str},{advisors_email}\n")
+                        
+                    # 15-second delay between emails to mimic human behavior and protect domain reputation
+                    if new_count < allowed_to_send:
+                        time.sleep(15)
+                except smtplib.SMTPAuthenticationError as e:
+                    print(f"❌ Critical Authentication Failure for NEW leads sender {advisors_email}: {e}. Aborting batch.")
+                    break
+                except Exception as e:
+                    print(f"⚠️ Failed to send to NEW lead {lead['email']}. Error: {e}")
+                    time.sleep(5)
     else:
         if not fresh_new_leads:
             print("ℹ️ No new leads (>= May 1, 2026) to process.")
         else:
             print("⚠️ Skipping NEW leads because ADVISORS_EMAIL or ADVISORS_APP_PASSWORD secrets are not configured on GitHub yet.")
-
+ 
     # 6. Connect and Send Loop for HISTORICAL Leads (using Ashwani account to steadily clear the backlog!)
     old_count = 0
     ashwani_email = os.environ.get("GMAIL_EMAIL")
     ashwani_password = os.environ.get("GMAIL_APP_PASSWORD")
     
     if fresh_old_leads and ashwani_email and ashwani_password:
-        print(f"\n🕰️ Processing up to {BATCH_SIZE} HISTORICAL leads using ashwani@fsidigital.ca...")
-        for lead in fresh_old_leads:
-            if old_count >= BATCH_SIZE:
-                print(f"🛑 Historical lead batch size limit of {BATCH_SIZE} reached.")
-                break
-                
-            print(f"⚡ Connecting to Zoho SMTP as Ashwani ({ashwani_email}) to send response to HISTORICAL lead {lead['email']}...")
-            try:
-                server = smtplib.SMTP('smtppro.zoho.in', 587, timeout=15)
-                server.starttls()
-                server.login(ashwani_email, ashwani_password)
-                
-                send_pitch_email(server, lead["email"], lead["first_name"], ashwani_email, "Ashwani")
-                server.quit()
-                
-                old_count += 1
-                
-                # Append immediately to the local log file
-                with open(SENT_LOG_FILE, "a") as f:
-                    f.write(lead["email"] + "\n")
+        sent_today = check_daily_sending_limit(SENT_LOG_FILE, ashwani_email)
+        print(f"📊 Daily sending audit: Ashwani ({ashwani_email}) has sent {sent_today}/{DAILY_CAP} emails in the last 24 hours.")
+        if sent_today >= DAILY_CAP:
+            print(f"🛑 Safe cap reached: Ashwani ({ashwani_email}) reached daily limit of {DAILY_CAP} emails. Skipping historical leads batch.")
+        else:
+            allowed_to_send = min(BATCH_SIZE, DAILY_CAP - sent_today)
+            print(f"\n🕰️ Processing up to {allowed_to_send} HISTORICAL leads using ashwani@fsidigital.ca (within daily cap of {DAILY_CAP})...")
+            for lead in fresh_old_leads:
+                if old_count >= allowed_to_send:
+                    print(f"🛑 Historical lead batch size limit of {allowed_to_send} reached.")
+                    break
                     
-                # 15-second delay between emails to mimic human behavior and protect domain reputation
-                if old_count < BATCH_SIZE:
-                    time.sleep(15)
-            except Exception as e:
-                print(f"⚠️ Failed to send to HISTORICAL lead {lead['email']}. Error: {e}")
-                time.sleep(5)
+                print(f"⚡ Connecting to Zoho SMTP as Ashwani ({ashwani_email}) to send response to HISTORICAL lead {lead['email']}...")
+                try:
+                    server = smtplib.SMTP('smtppro.zoho.in', 587, timeout=15)
+                    server.starttls()
+                    server.login(ashwani_email, ashwani_password)
+                    
+                    send_pitch_email(server, lead["email"], lead["first_name"], ashwani_email, "Ashwani")
+                    server.quit()
+                    
+                    old_count += 1
+                    
+                    # Append immediately to the local log file in format: email,timestamp,sender
+                    timestamp_str = pd.Timestamp.now(tz='UTC').isoformat()
+                    with open(SENT_LOG_FILE, "a") as f:
+                        f.write(f"{lead['email']},{timestamp_str},{ashwani_email}\n")
+                        
+                    # 15-second delay between emails to mimic human behavior and protect domain reputation
+                    if old_count < allowed_to_send:
+                        time.sleep(15)
+                except smtplib.SMTPAuthenticationError as e:
+                    print(f"❌ Critical Authentication Failure for HISTORICAL leads sender {ashwani_email}: {e}. Aborting batch.")
+                    break
+                except Exception as e:
+                    print(f"⚠️ Failed to send to HISTORICAL lead {lead['email']}. Error: {e}")
+                    time.sleep(5)
     else:
         if not fresh_old_leads:
             print("ℹ️ No historical leads (< May 1, 2026) to process.")

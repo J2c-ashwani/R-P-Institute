@@ -32,7 +32,9 @@ CSV_FILE = "buyer_leads.csv"
 SENT_LOG_FILE = "buyer_sent_emails.txt"
 
 # Batch size per execution run (keeps triggers safe from timeouts and spam filters)
-BATCH_SIZE = 6
+BATCH_SIZE = 3
+DAILY_CAP = 20  # Safety limit for Zoho SMTP (emails/day per account)
+
 
 SUBJECT_OPTIONS = [
     "Quick question about your lead pipeline",
@@ -242,6 +244,37 @@ def get_b2b_html_body(company_name, dm_name, dm_role, sender_email):
 """
     return html
 
+def check_daily_sending_limit(log_file, sender_email):
+    """
+    Checks how many emails were sent by a specific sender_email in the last 24 hours.
+    Returns the count of sent emails.
+    """
+    if not os.path.exists(log_file):
+        return 0
+        
+    count = 0
+    now = pd.Timestamp.now(tz='UTC')
+    with open(log_file, "r") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            parts = line.split(',')
+            if len(parts) >= 3:
+                try:
+                    logged_sender = parts[2].strip().lower()
+                    if logged_sender == sender_email.lower():
+                        timestamp = pd.to_datetime(parts[1].strip())
+                        if timestamp.tzinfo is None:
+                            timestamp = timestamp.tz_localize('UTC')
+                        else:
+                            timestamp = timestamp.tz_convert('UTC')
+                        if (now - timestamp).total_seconds() < 86400:
+                            count += 1
+                except Exception:
+                    pass
+    return count
+
 def send_b2b_email(server, recipient_email, company_name, dm_name, dm_role, sender_email, sender_display_name):
     """Constructs and sends a premium B2B cold email."""
     subject = random.choice(SUBJECT_OPTIONS).replace("{company_name}", company_name or "your firm")
@@ -291,10 +324,17 @@ def main():
         print(f"❌ Error reading B2B leads CSV: {e}")
         return
         
-    # 2. Load Sent Log
+    # 2. Load Sent Log (handles backward compatibility with plain emails)
+    sent_emails = set()
     if os.path.exists(SENT_LOG_FILE):
         with open(SENT_LOG_FILE, "r") as f:
-            sent_emails = set(line.strip().lower() for line in f if line.strip())
+            for line in f:
+                line = line.strip().lower()
+                if not line or line.startswith('#'):
+                    continue
+                parts = line.split(',')
+                email = parts[0].strip()
+                sent_emails.add(email)
     else:
         sent_emails = set()
         
@@ -321,8 +361,41 @@ def main():
         print("❌ Error: No B2B sender accounts loaded from environment secrets.")
         return
         
+    # Check daily sending cap before sending and filter active accounts
+    active_accounts = []
+    for acc in ACCOUNTS:
+        sent_today = check_daily_sending_limit(SENT_LOG_FILE, acc["email"])
+        print(f"📊 Daily sending audit: B2B Account ({acc['email']}) has sent {sent_today}/{DAILY_CAP} emails in the last 24 hours.")
+        if sent_today < DAILY_CAP:
+            active_accounts.append({
+                "email": acc["email"],
+                "password": acc["password"],
+                "display_name": acc["display_name"],
+                "remaining": DAILY_CAP - sent_today
+            })
+            
+    if not active_accounts:
+        print("🛑 All loaded B2B accounts have reached their daily caps. Skipping this outreach batch.")
+        return
+        
     count = 0
+    rotation_idx = 0
     for lead in fresh_leads:
+        available_accounts = [acc for acc in active_accounts if acc["remaining"] > 0]
+        if not available_accounts:
+            print("🛑 All B2B accounts have exhausted their limits during this run.")
+            break
+            
+        if count >= BATCH_SIZE:
+            print(f"🛑 Batch size limit of {BATCH_SIZE} reached for this execution cycle.")
+            break
+            
+        # Rotate B2B accounts to distribute sending load
+        account = available_accounts[rotation_idx % len(available_accounts)]
+        sender_email = account["email"]
+        app_password = account["password"]
+        sender_display_name = account["display_name"]
+        
         email = str(lead[email_col]).strip().lower()
         company = lead.get('Company', 'there')
         if not company or str(company).lower() == 'nan':
@@ -335,17 +408,7 @@ def main():
         dm_role = lead.get('DecisionMakerRole', 'Grant Consulting Partner')
         if not dm_role or str(dm_role).lower() == 'nan':
             dm_role = "Grant Consulting Partner"
-
-        if count >= BATCH_SIZE:
-            print(f"🛑 Batch size limit of {BATCH_SIZE} reached for this execution cycle.")
-            break
-            
-        # Rotate B2B accounts 50/50 to distribute sending load
-        account = ACCOUNTS[count % len(ACCOUNTS)]
-        sender_email = account["email"]
-        app_password = account["password"]
-        sender_display_name = account["display_name"]
-        
+ 
         # Determine SMTP Host based on custom domain vs gmail
         smtp_host = "smtppro.zoho.in" if "fsidigital.ca" in sender_email.lower() else "smtp.gmail.com"
         
@@ -359,14 +422,20 @@ def main():
             server.quit()
             
             count += 1
+            account["remaining"] -= 1
+            rotation_idx += 1
             
-            # Append immediately to local logs to protect against sudden failures
+            # Append immediately to local logs in format: email,timestamp,sender
+            timestamp_str = pd.Timestamp.now(tz='UTC').isoformat()
             with open(SENT_LOG_FILE, "a") as f:
-                f.write(email + "\n")
+                f.write(f"{email},{timestamp_str},{sender_email}\n")
                 
             # 15-second spam-protection delay between sends
-            if count < BATCH_SIZE:
+            if count < BATCH_SIZE and any(acc["remaining"] > 0 for acc in active_accounts):
                 time.sleep(15)
+        except smtplib.SMTPAuthenticationError as e:
+            print(f"❌ Critical Authentication Failure for B2B sender {sender_email}: {e}. Aborting batch.")
+            break
         except Exception as e:
             print(f"⚠️ Failed to send B2B email to {email}. Error: {e}")
             time.sleep(5)

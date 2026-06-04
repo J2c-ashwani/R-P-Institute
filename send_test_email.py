@@ -14,8 +14,8 @@ if os.path.exists(".env"):
 SENDER_EMAIL = os.environ.get("GMAIL_EMAIL")
 APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
 
-# Import the HTML template and variables from the main auto_responder script
-from auto_responder import get_premium_pitch_html, CONSULTATION_LINK
+# Import the template and variables from the main auto_responder script
+from auto_responder import get_premium_pitch_text
 
 recipient = "jhasalcreativepeople@gmail.com"
 
@@ -24,9 +24,8 @@ msg['From'] = f"Ashwani <{SENDER_EMAIL}>"
 msg['To'] = recipient
 msg['Subject'] = "Your grant eligibility results are ready"
 
-# Replace placeholder with Consultation link
-html_body = get_premium_pitch_html("Ashwani").replace("{CONSULTATION_LINK}", CONSULTATION_LINK)
-msg.attach(MIMEText(html_body, 'html'))
+text_body = get_premium_pitch_text("Ashwani")
+msg.attach(MIMEText(text_body, 'plain'))
 
 smtp_host = "smtp.gmail.com" if SENDER_EMAIL.lower().endswith("@gmail.com") else "smtppro.zoho.in"
 print(f"⚡ Connecting to {smtp_host} to send preview email...")

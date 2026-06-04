@@ -498,9 +498,11 @@ def main():
                     print(f"🛑 New lead batch size limit of {allowed_to_send} reached.")
                     break
                     
-                print(f"⚡ Connecting to Zoho SMTP as Advisors ({advisors_email}) to send response to NEW lead {lead['email']}...")
+                # Determine SMTP Host based on custom domain vs gmail
+                smtp_host = "smtppro.zoho.in" if "fsidigital.ca" in advisors_email.lower() else "smtp.gmail.com"
+                print(f"⚡ Connecting to {smtp_host} as Advisors ({advisors_email}) to send response to NEW lead {lead['email']}...")
                 try:
-                    server = smtplib.SMTP('smtppro.zoho.in', 587, timeout=15)
+                    server = smtplib.SMTP(smtp_host, 587, timeout=15)
                     server.starttls()
                     server.login(advisors_email, advisors_password)
                     
@@ -547,9 +549,11 @@ def main():
                     print(f"🛑 Historical lead batch size limit of {allowed_to_send} reached.")
                     break
                     
-                print(f"⚡ Connecting to Zoho SMTP as Ashwani ({ashwani_email}) to send response to HISTORICAL lead {lead['email']}...")
+                # Determine SMTP Host based on custom domain vs gmail
+                smtp_host = "smtppro.zoho.in" if "fsidigital.ca" in ashwani_email.lower() else "smtp.gmail.com"
+                print(f"⚡ Connecting to {smtp_host} as Ashwani ({ashwani_email}) to send response to HISTORICAL lead {lead['email']}...")
                 try:
-                    server = smtplib.SMTP('smtppro.zoho.in', 587, timeout=15)
+                    server = smtplib.SMTP(smtp_host, 587, timeout=15)
                     server.starttls()
                     server.login(ashwani_email, ashwani_password)
                     

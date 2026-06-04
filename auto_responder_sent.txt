@@ -50,3 +50,6 @@ michaelbebs69@gmail.com,2026-06-04T18:01:48.510480+00:00,advisors@fsidigital.ca
 nicolas.sene@uqtr.ca,2026-06-04T18:07:59.600280+00:00,advisors@fsidigital.ca
 rippolito@biolargo.com,2026-06-04T18:08:17.718211+00:00,advisors@fsidigital.ca
 trangpham9889@gmail.com,2026-06-04T18:08:35.860488+00:00,advisors@fsidigital.ca
+kevin.hunt@decisive-edge.ca,2026-06-04T18:31:00.521751+00:00,advisors@fsidigital.ca
+msemenuk@rcn.com,2026-06-04T18:31:18.743469+00:00,advisors@fsidigital.ca
+normansonkee@gmail.com,2026-06-04T18:31:36.909277+00:00,advisors@fsidigital.ca

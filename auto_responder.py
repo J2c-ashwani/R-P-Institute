@@ -38,7 +38,7 @@ SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWQ6ih5-XHfhi8
 
 SENT_LOG_FILE = "auto_responder_sent.txt"
 BATCH_SIZE = 3
-DAILY_CAP = 30  # Safety limit for Zoho SMTP (emails/day per account)
+DAILY_CAP = 100  # Safety limit for Gmail SMTP (emails/day per account)
 
 
 # FIX #1: A/B Subject Lines — short, human, curiosity-driven (avoids spam triggers)

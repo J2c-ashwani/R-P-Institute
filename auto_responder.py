@@ -49,225 +49,33 @@ B2C_SUBJECT_OPTIONS = [
     "Following up on your grant inquiry",
 ]
 
-def get_premium_pitch_html(first_name):
-    """Returns the high-converting $199 premium funding strategy session HTML template.
-    Redesigned with all 7 conversion fixes: social proof, price anchoring, 
-    3-step process, outcome-focused CTA, no distractions."""
-    html = f"""
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Funding Eligibility Results</title>
-</head>
-<body style="margin:0;padding:0;background-color:#070716;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+def get_premium_pitch_text(first_name):
+    """Returns the clean, high-converting plain-text email template."""
+    text = f"""Hi {first_name},
 
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#070716;padding:40px 0;">
-    <tr>
-      <td align="center">
-        <table width="580" cellpadding="0" cellspacing="0" style="background-color:#0d0e2c;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);border:1px solid #1f2256;">
-          
-          <!-- PREMIUM HEADER -->
-          <tr>
-            <td style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:24px 40px;text-align:left;border-bottom:1px solid #2d3a55;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td>
-                    <span style="color:#38bdf8;font-size:22px;font-weight:800;letter-spacing:1.5px;">FSI DIGITAL</span>
-                    <span style="color:#475569;font-size:11px;display:block;margin-top:2px;letter-spacing:0.5px;">FUNDING STRATEGY DIVISION</span>
-                  </td>
-                  <td align="right">
-                    <span style="display:inline-block;background-color:#059669;color:#ffffff;font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:0.5px;">ELIGIBLE</span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+Thank you for submitting your funding inquiry on FSI Digital. I personally reviewed your submission.
 
-          <!-- FIX #2: SOCIAL PROOF STATS BAR -->
-          <tr>
-            <td style="padding:24px 40px 0;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="border-radius:10px;overflow:hidden;border:1px solid #1e3a5f;">
-                <tr>
-                  <td width="33%" style="background-color:#0f1d36;padding:14px 12px;text-align:center;border-right:1px solid #1e3a5f;">
-                    <div style="color:#38bdf8;font-size:22px;font-weight:800;line-height:1;">350+</div>
-                    <div style="color:#64748b;font-size:9px;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;">Businesses Helped</div>
-                  </td>
-                  <td width="33%" style="background-color:#0f1d36;padding:14px 12px;text-align:center;border-right:1px solid #1e3a5f;">
-                    <div style="color:#10b981;font-size:22px;font-weight:800;line-height:1;">$2.8M+</div>
-                    <div style="color:#64748b;font-size:9px;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;">Funding Identified</div>
-                  </td>
-                  <td width="33%" style="background-color:#0f1d36;padding:14px 12px;text-align:center;">
-                    <div style="color:#f59e0b;font-size:22px;font-weight:800;line-height:1;">94%</div>
-                    <div style="color:#64748b;font-size:9px;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:0.5px;">Satisfaction Rate</div>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          
-          <!-- MAIN CONTENT -->
-          <tr>
-            <td style="padding:28px 40px 20px;color:#c8cfe8;font-size:15px;line-height:1.75;">
-              <p style="margin:0 0 16px;font-size:16px;color:#e2e8f0;">Hi {first_name},</p>
-              
-              <p style="margin:0 0 16px;">
-                Thank you for submitting your funding inquiry on <a href="https://fsidigital.ca" style="color:#38bdf8;text-decoration:none;font-weight:600;">FSI Digital</a>. I personally reviewed your submission.
-              </p>
-              
-              <p style="margin:0 0 16px;">
-                Our initial screening shows your business falls into a <strong style="color:#10b981;">high-eligibility category</strong>. However, because government grant programs and SR&amp;ED tax credits have complex qualification rules, 90% of businesses that apply without expert guidance get rejected on technicalities alone.
-              </p>
-              
-              <p style="margin:0 0 24px;">
-                To help you avoid that, I am offering a limited number of <strong style="color:#e2e8f0;">1-on-1 Custom Funding Strategy Sessions</strong> this week.
-              </p>
-            </td>
-          </tr>
+Our initial screening shows your business falls into a high-eligibility category. However, because government grant programs and SR&ED tax credits have complex qualification rules, 90% of businesses that apply without expert guidance get rejected on technicalities alone.
 
-          <!-- WHAT YOU GET — 3 DELIVERABLES -->
-          <tr>
-            <td style="padding:0 40px 24px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0d1b2a;border-radius:12px;border:1px solid #1e3a5f;overflow:hidden;">
-                <tr>
-                  <td style="padding:18px 20px 8px;">
-                    <span style="color:#e2e8f0;font-size:14px;font-weight:700;">What you will receive:</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:4px 20px 18px;">
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding:8px 0;">
-                          <table cellpadding="0" cellspacing="0"><tr>
-                            <td style="width:28px;height:28px;background:linear-gradient(135deg,#38bdf8,#0284c7);border-radius:50%;text-align:center;color:#fff;font-size:12px;font-weight:800;line-height:28px;vertical-align:middle;">1</td>
-                            <td style="padding-left:12px;color:#94a3b8;font-size:13px;line-height:1.5;">A <strong style="color:#e2e8f0;">Custom Funding Roadmap</strong> — 2 hours of pre-research on your industry, region, and tax profile before our call.</td>
-                          </tr></table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px 0;">
-                          <table cellpadding="0" cellspacing="0"><tr>
-                            <td style="width:28px;height:28px;background:linear-gradient(135deg,#10b981,#059669);border-radius:50%;text-align:center;color:#fff;font-size:12px;font-weight:800;line-height:28px;vertical-align:middle;">2</td>
-                            <td style="padding-left:12px;color:#94a3b8;font-size:13px;line-height:1.5;">Your <strong style="color:#e2e8f0;">Top 3 Grant Programs</strong> ranked by approval probability, with exact deadlines and funding amounts.</td>
-                          </tr></table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px 0;">
-                          <table cellpadding="0" cellspacing="0"><tr>
-                            <td style="width:28px;height:28px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:50%;text-align:center;color:#fff;font-size:12px;font-weight:800;line-height:28px;vertical-align:middle;">3</td>
-                            <td style="padding-left:12px;color:#94a3b8;font-size:13px;line-height:1.5;">A <strong style="color:#e2e8f0;">Step-by-Step Filing Plan</strong> to avoid the documentation errors that cause 90% of rejections.</td>
-                          </tr></table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+To help you avoid that, I am offering a limited number of 1-on-1 Custom Funding Strategy Sessions this week.
 
-          <!-- FIX #6: PRICE ANCHORING CARD -->
-          <tr>
-            <td style="padding:0 40px 24px;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="border-radius:12px;overflow:hidden;border:1px solid #1e3a5f;">
-                <tr>
-                  <td style="background:linear-gradient(135deg,#0c1f3d,#162d50);padding:18px 24px;">
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td>
-                          <div style="color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Your Investment</div>
-                          <div style="color:#ffffff;font-size:28px;font-weight:800;line-height:1;">$199 <span style="color:#64748b;font-size:14px;font-weight:400;">USD</span></div>
-                          <div style="color:#94a3b8;font-size:12px;margin-top:4px;">Includes 2 hrs research + 30-min private strategy call</div>
-                        </td>
-                        <td align="right" style="vertical-align:top;">
-                          <div style="text-decoration:line-through;color:#ef4444;font-size:14px;font-weight:600;opacity:0.7;">$500+</div>
-                          <div style="color:#64748b;font-size:10px;">Typical industry rate</div>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+On our call, we will map out:
+1. A Custom Funding Roadmap (built after 2 hours of pre-research on your business).
+2. Your Top 3 eligible grant programs ranked by approval probability.
+3. A step-by-step filing plan to avoid documentation errors.
 
-          <!-- FIX #5: CTA BUTTON — OUTCOME-FOCUSED -->
-          <tr>
-            <td style="padding:0 40px 28px;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td align="center">
-                    <a href="{{CONSULTATION_LINK}}" style="display:inline-block;background:linear-gradient(135deg,#38bdf8,#0284c7);color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:16px 48px;border-radius:10px;box-shadow:0 6px 20px rgba(56,189,248,0.25);letter-spacing:0.3px;">
-                      Get My Custom Funding Roadmap &rarr;
-                    </a>
-                    <div style="color:#5a6a9a;font-size:11px;margin-top:10px;">Secure Checkout via PayPal or Card &nbsp;&bull;&nbsp; Only 8 spots remaining this week</div>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+The session is $199 USD (includes pre-call research and a 30-minute private call). You can secure your spot and book your session directly here:
 
-          <!-- FIX #4: WHAT HAPPENS AFTER YOU PAY — 3-STEP PROCESS -->
-          <tr>
-            <td style="padding:0 40px 28px;">
-              <table width="100%" cellpadding="0" cellspacing="8">
-                <tr>
-                  <td width="33%" style="background-color:#0d1b2a;border-radius:8px;padding:14px 12px;border:1px solid #1e3a5f;text-align:center;">
-                    <div style="color:#38bdf8;font-size:18px;font-weight:800;margin-bottom:4px;">Step 1</div>
-                    <div style="color:#94a3b8;font-size:11px;line-height:1.4;">You pay $199 &amp; share your business details</div>
-                  </td>
-                  <td width="33%" style="background-color:#0d1b2a;border-radius:8px;padding:14px 12px;border:1px solid #1e3a5f;text-align:center;">
-                    <div style="color:#10b981;font-size:18px;font-weight:800;margin-bottom:4px;">Step 2</div>
-                    <div style="color:#94a3b8;font-size:11px;line-height:1.4;">We spend 2 hours researching your eligibility</div>
-                  </td>
-                  <td width="33%" style="background-color:#0d1b2a;border-radius:8px;padding:14px 12px;border:1px solid #1e3a5f;text-align:center;">
-                    <div style="color:#f59e0b;font-size:18px;font-weight:800;margin-bottom:4px;">Step 3</div>
-                    <div style="color:#94a3b8;font-size:11px;line-height:1.4;">Private 30-min call with your full roadmap</div>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+{CONSULTATION_LINK}
 
-          <!-- URGENCY CLOSE -->
-          <tr>
-            <td style="padding:0 40px 28px;">
-              <p style="margin:0;font-size:13px;color:#8f9ac2;line-height:1.6;font-style:italic;">
-                Because each session requires 2 hours of dedicated pre-call research from our advisory team, spots are strictly limited and filled on a first-come, first-served basis.
-              </p>
-            </td>
-          </tr>
-          
-          <!-- PREMIUM FOOTER -->
-          <tr>
-            <td style="background:linear-gradient(135deg,#060d1b,#0a1628);padding:24px 40px;border-top:1px solid #1e293b;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="color:#64748b;font-size:12px;line-height:1.6;">
-                    <strong style="color:#94a3b8;">Ashwani Kumar</strong><br>
-                    Lead Funding Strategist, FSI Digital<br>
-                    <a href="https://fsidigital.ca" style="color:#38bdf8;text-decoration:none;">fsidigital.ca</a> &nbsp;|&nbsp; ashwani@fsidigital.ca
-                  </td>
-                  <td align="right" style="vertical-align:top;">
-                    <span style="display:inline-block;background-color:#1e293b;color:#64748b;font-size:9px;font-weight:600;padding:4px 10px;border-radius:4px;letter-spacing:0.5px;">CANADA &amp; USA</span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          
-        </table>
-      </td>
-    </tr>
-  </table>
+Note: Because each session requires 2 hours of dedicated pre-call research, spots are strictly limited and filled on a first-come, first-served basis.
 
-</body>
-</html>
-"""
-    return html
+Best regards,
+
+Ashwani Kumar
+Lead Funding Strategist, FSI Digital
+ashwani@fsidigital.ca"""
+    return text
 
 def check_daily_sending_limit(log_file, sender_email):
     """
@@ -302,7 +110,7 @@ def check_daily_sending_limit(log_file, sender_email):
 
 def send_pitch_email(server, recipient_email, first_name, sender_email, sender_display_name):
     """Sends the premium consultation pitch email with A/B subject line testing."""
-    # FIX #1: Rotate subject lines dynamically with personalization
+    # Rotate subject lines dynamically with personalization
     subject = random.choice(B2C_SUBJECT_OPTIONS).replace("{first_name}", first_name or "there")
     
     msg = MIMEMultipart('alternative')
@@ -310,8 +118,8 @@ def send_pitch_email(server, recipient_email, first_name, sender_email, sender_d
     msg['To'] = recipient_email
     msg['Subject'] = subject
     
-    html_body = get_premium_pitch_html(first_name).replace("{CONSULTATION_LINK}", CONSULTATION_LINK)
-    msg.attach(MIMEText(html_body, 'html'))
+    text_body = get_premium_pitch_text(first_name)
+    msg.attach(MIMEText(text_body, 'plain'))
     
     server.send_message(msg)
     print(f"📧 [AUTO-RESPONDER] Sent premium pitch to {recipient_email} (Name: {first_name}) | Subject: {subject} | From: {sender_display_name} <{sender_email}>")

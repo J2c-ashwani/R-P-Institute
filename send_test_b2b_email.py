@@ -15,8 +15,8 @@ if os.path.exists(".env"):
 SENDER_EMAIL = "partnership@fsidigital.ca"
 APP_PASSWORD = "Krr7R25Yg31D"
 
-# Import the new premium B2B HTML template
-from buyer_email_engine import get_b2b_html_body
+# Import the new premium B2B plain-text template
+from buyer_email_engine import get_b2b_plain_text
 
 # Test with realistic sample data
 recipient = "sukashwanikumar@gmail.com"
@@ -29,8 +29,8 @@ msg['From'] = f"Ashwani Kumar <{SENDER_EMAIL}>"
 msg['To'] = recipient
 msg['Subject'] = "3 free grant leads for your team"
 
-html_body = get_b2b_html_body(test_company, test_dm_name, test_dm_role, SENDER_EMAIL)
-msg.attach(MIMEText(html_body, 'html'))
+text_body = get_b2b_plain_text(test_company, test_dm_name, test_dm_role, SENDER_EMAIL)
+msg.attach(MIMEText(text_body, 'plain'))
 
 print("⚡ Connecting to Zoho SMTP to send B2B preview email...")
 try:

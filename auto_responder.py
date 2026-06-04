@@ -211,10 +211,10 @@ def main():
     # Define our target cutoff time (2 hours ago)
     now = pd.Timestamp.now()
     cutoff_time = now - pd.Timedelta(hours=2)
-    cutoff_date = pd.to_datetime("2026-05-01")
+    cutoff_date = pd.to_datetime("2026-06-04")
     
     print(f"⏰ Filters Active:")
-    print(f"   - Split processing: New leads (>= May 1, 2026) send from advisors@, Historical leads (< May 1, 2026) send from ashwani@.")
+    print(f"   - Split processing: Website leads (>= June 4, 2026) are handled by Resend. Historical backlog (< June 4, 2026) processed by background script.")
     print(f"   - For fresh leads, only those created before: {cutoff_time.strftime('%Y-%m-%d %H:%M:%S')} (at least 2 hours ago)")
     print(f"   - Strict exclusion of all newsletter leads.")
     seen_emails_this_run = set()

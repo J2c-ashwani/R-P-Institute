@@ -288,78 +288,27 @@ def main():
         print("🎉 No new or historical leads to email. Exiting safely.")
         return
 
-    # 5. Connect and Send Loop for NEW Leads (using Advisors account to keep fresh leads instant!)
+    # 5. Connect and Send Loop for NEW Leads (using Ashwani account for personal touch!)
     new_count = 0
-    advisors_email = os.environ.get("ADVISORS_EMAIL")
-    advisors_password = os.environ.get("ADVISORS_APP_PASSWORD")
+    ashwani_email = os.environ.get("GMAIL_EMAIL")
+    ashwani_password = os.environ.get("GMAIL_APP_PASSWORD")
     
-    if fresh_new_leads and advisors_email and advisors_password:
-        sent_today = check_daily_sending_limit(SENT_LOG_FILE, advisors_email)
-        print(f"📊 Daily sending audit: Advisors ({advisors_email}) has sent {sent_today}/{DAILY_CAP} emails in the last 24 hours.")
+    if fresh_new_leads and ashwani_email and ashwani_password:
+        sent_today = check_daily_sending_limit(SENT_LOG_FILE, ashwani_email)
+        print(f"📊 Daily sending audit: Ashwani ({ashwani_email}) has sent {sent_today}/{DAILY_CAP} emails in the last 24 hours.")
         if sent_today >= DAILY_CAP:
-            print(f"🛑 Safe cap reached: Advisors ({advisors_email}) reached daily limit of {DAILY_CAP} emails. Skipping new leads batch.")
+            print(f"🛑 Safe cap reached: Ashwani ({ashwani_email}) reached daily limit of {DAILY_CAP} emails. Skipping new leads batch.")
         else:
             allowed_to_send = min(BATCH_SIZE, DAILY_CAP - sent_today)
-            print(f"\n🔥 Processing up to {allowed_to_send} NEW leads using advisors@fsidigital.ca (within daily cap of {DAILY_CAP})...")
+            print(f"\n🔥 Processing up to {allowed_to_send} NEW leads using ashwani@fsidigital.ca (within daily cap of {DAILY_CAP})...")
             for lead in fresh_new_leads:
                 if new_count >= allowed_to_send:
                     print(f"🛑 New lead batch size limit of {allowed_to_send} reached.")
                     break
                     
                 # Determine SMTP Host based on custom domain vs gmail
-                smtp_host = "smtp.gmail.com" if advisors_email.lower().endswith("@gmail.com") else "smtppro.zoho.in"
-                print(f"⚡ Connecting to {smtp_host} as Advisors ({advisors_email}) to send response to NEW lead {lead['email']}...")
-                try:
-                    server = smtplib.SMTP(smtp_host, 587, timeout=15)
-                    server.starttls()
-                    server.login(advisors_email, advisors_password)
-                    
-                    send_pitch_email(server, lead["email"], lead["first_name"], advisors_email, "Advisors")
-                    server.quit()
-                    
-                    new_count += 1
-                    
-                    # Append immediately to the local log file in format: email,timestamp,sender
-                    timestamp_str = pd.Timestamp.now(tz='UTC').isoformat()
-                    with open(SENT_LOG_FILE, "a") as f:
-                        f.write(f"{lead['email']},{timestamp_str},{advisors_email}\n")
-                        
-                    # 15-second delay between emails to mimic human behavior and protect domain reputation
-                    if new_count < allowed_to_send:
-                        time.sleep(15)
-                except smtplib.SMTPAuthenticationError as e:
-                    print(f"❌ Critical Authentication Failure for NEW leads sender {advisors_email}: {e}. Aborting batch.")
-                    break
-                except Exception as e:
-                    print(f"⚠️ Failed to send to NEW lead {lead['email']}. Error: {e}")
-                    time.sleep(5)
-    else:
-        if not fresh_new_leads:
-            print("ℹ️ No new leads (>= May 1, 2026) to process.")
-        else:
-            print("⚠️ Skipping NEW leads because ADVISORS_EMAIL or ADVISORS_APP_PASSWORD secrets are not configured on GitHub yet.")
- 
-    # 6. Connect and Send Loop for HISTORICAL Leads (using Ashwani account to steadily clear the backlog!)
-    old_count = 0
-    ashwani_email = os.environ.get("GMAIL_EMAIL")
-    ashwani_password = os.environ.get("GMAIL_APP_PASSWORD")
-    
-    if fresh_old_leads and ashwani_email and ashwani_password:
-        sent_today = check_daily_sending_limit(SENT_LOG_FILE, ashwani_email)
-        print(f"📊 Daily sending audit: Ashwani ({ashwani_email}) has sent {sent_today}/{DAILY_CAP} emails in the last 24 hours.")
-        if sent_today >= DAILY_CAP:
-            print(f"🛑 Safe cap reached: Ashwani ({ashwani_email}) reached daily limit of {DAILY_CAP} emails. Skipping historical leads batch.")
-        else:
-            allowed_to_send = min(BATCH_SIZE, DAILY_CAP - sent_today)
-            print(f"\n🕰️ Processing up to {allowed_to_send} HISTORICAL leads using ashwani@fsidigital.ca (within daily cap of {DAILY_CAP})...")
-            for lead in fresh_old_leads:
-                if old_count >= allowed_to_send:
-                    print(f"🛑 Historical lead batch size limit of {allowed_to_send} reached.")
-                    break
-                    
-                # Determine SMTP Host based on custom domain vs gmail
                 smtp_host = "smtp.gmail.com" if ashwani_email.lower().endswith("@gmail.com") else "smtppro.zoho.in"
-                print(f"⚡ Connecting to {smtp_host} as Ashwani ({ashwani_email}) to send response to HISTORICAL lead {lead['email']}...")
+                print(f"⚡ Connecting to {smtp_host} as Ashwani ({ashwani_email}) to send response to NEW lead {lead['email']}...")
                 try:
                     server = smtplib.SMTP(smtp_host, 587, timeout=15)
                     server.starttls()
@@ -368,7 +317,7 @@ def main():
                     send_pitch_email(server, lead["email"], lead["first_name"], ashwani_email, "Ashwani")
                     server.quit()
                     
-                    old_count += 1
+                    new_count += 1
                     
                     # Append immediately to the local log file in format: email,timestamp,sender
                     timestamp_str = pd.Timestamp.now(tz='UTC').isoformat()
@@ -376,10 +325,61 @@ def main():
                         f.write(f"{lead['email']},{timestamp_str},{ashwani_email}\n")
                         
                     # 15-second delay between emails to mimic human behavior and protect domain reputation
+                    if new_count < allowed_to_send:
+                        time.sleep(15)
+                except smtplib.SMTPAuthenticationError as e:
+                    print(f"❌ Critical Authentication Failure for NEW leads sender {ashwani_email}: {e}. Aborting batch.")
+                    break
+                except Exception as e:
+                    print(f"⚠️ Failed to send to NEW lead {lead['email']}. Error: {e}")
+                    time.sleep(5)
+    else:
+        if not fresh_new_leads:
+            print("ℹ️ No new leads (>= May 1, 2026) to process.")
+        else:
+            print("⚠️ Skipping NEW leads because GMAIL_EMAIL or GMAIL_APP_PASSWORD secrets are not configured on GitHub yet.")
+ 
+    # 6. Connect and Send Loop for HISTORICAL Leads (using Advisors account to steadily clear the backlog!)
+    old_count = 0
+    advisors_email = os.environ.get("ADVISORS_EMAIL")
+    advisors_password = os.environ.get("ADVISORS_APP_PASSWORD")
+    
+    if fresh_old_leads and advisors_email and advisors_password:
+        sent_today = check_daily_sending_limit(SENT_LOG_FILE, advisors_email)
+        print(f"📊 Daily sending audit: Advisors ({advisors_email}) has sent {sent_today}/{DAILY_CAP} emails in the last 24 hours.")
+        if sent_today >= DAILY_CAP:
+            print(f"🛑 Safe cap reached: Advisors ({advisors_email}) reached daily limit of {DAILY_CAP} emails. Skipping historical leads batch.")
+        else:
+            allowed_to_send = min(BATCH_SIZE, DAILY_CAP - sent_today)
+            print(f"\n🕰️ Processing up to {allowed_to_send} HISTORICAL leads using advisors@fsidigital.ca (within daily cap of {DAILY_CAP})...")
+            for lead in fresh_old_leads:
+                if old_count >= allowed_to_send:
+                    print(f"🛑 Historical lead batch size limit of {allowed_to_send} reached.")
+                    break
+                    
+                # Determine SMTP Host based on custom domain vs gmail
+                smtp_host = "smtp.gmail.com" if advisors_email.lower().endswith("@gmail.com") else "smtppro.zoho.in"
+                print(f"⚡ Connecting to {smtp_host} as Advisors ({advisors_email}) to send response to HISTORICAL lead {lead['email']}...")
+                try:
+                    server = smtplib.SMTP(smtp_host, 587, timeout=15)
+                    server.starttls()
+                    server.login(advisors_email, advisors_password)
+                    
+                    send_pitch_email(server, lead["email"], lead["first_name"], advisors_email, "Advisors")
+                    server.quit()
+                    
+                    old_count += 1
+                    
+                    # Append immediately to the local log file in format: email,timestamp,sender
+                    timestamp_str = pd.Timestamp.now(tz='UTC').isoformat()
+                    with open(SENT_LOG_FILE, "a") as f:
+                        f.write(f"{lead['email']},{timestamp_str},{advisors_email}\n")
+                        
+                    # 15-second delay between emails to mimic human behavior and protect domain reputation
                     if old_count < allowed_to_send:
                         time.sleep(15)
                 except smtplib.SMTPAuthenticationError as e:
-                    print(f"❌ Critical Authentication Failure for HISTORICAL leads sender {ashwani_email}: {e}. Aborting batch.")
+                    print(f"❌ Critical Authentication Failure for HISTORICAL leads sender {advisors_email}: {e}. Aborting batch.")
                     break
                 except Exception as e:
                     print(f"⚠️ Failed to send to HISTORICAL lead {lead['email']}. Error: {e}")
@@ -388,7 +388,7 @@ def main():
         if not fresh_old_leads:
             print("ℹ️ No historical leads (< May 1, 2026) to process.")
         else:
-            print("⚠️ Skipping HISTORICAL leads because GMAIL_EMAIL or GMAIL_APP_PASSWORD secrets are not configured on GitHub.")
+            print("⚠️ Skipping HISTORICAL leads because ADVISORS_EMAIL or ADVISORS_APP_PASSWORD secrets are not configured on GitHub.")
             
     print(f"\n🎉 SUCCESS: Automated response run completed! Emailed {new_count} new leads and {old_count} historical leads.")
 

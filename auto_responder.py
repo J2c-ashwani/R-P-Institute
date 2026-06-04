@@ -288,56 +288,10 @@ def main():
         print("🎉 No new or historical leads to email. Exiting safely.")
         return
 
-    # 5. Connect and Send Loop for NEW Leads (using Ashwani account for personal touch!)
+    # 5. NEW Leads are now handled instantly via Resend on the website.
+    # We skip processing them in the background script to avoid duplicate emails.
+    print("ℹ️ NEW leads (>= May 1, 2026) are handled instantly via Resend on website. Skipping background queue.")
     new_count = 0
-    ashwani_email = os.environ.get("GMAIL_EMAIL")
-    ashwani_password = os.environ.get("GMAIL_APP_PASSWORD")
-    
-    if fresh_new_leads and ashwani_email and ashwani_password:
-        sent_today = check_daily_sending_limit(SENT_LOG_FILE, ashwani_email)
-        print(f"📊 Daily sending audit: Ashwani ({ashwani_email}) has sent {sent_today}/{DAILY_CAP} emails in the last 24 hours.")
-        if sent_today >= DAILY_CAP:
-            print(f"🛑 Safe cap reached: Ashwani ({ashwani_email}) reached daily limit of {DAILY_CAP} emails. Skipping new leads batch.")
-        else:
-            allowed_to_send = min(BATCH_SIZE, DAILY_CAP - sent_today)
-            print(f"\n🔥 Processing up to {allowed_to_send} NEW leads using ashwani@fsidigital.ca (within daily cap of {DAILY_CAP})...")
-            for lead in fresh_new_leads:
-                if new_count >= allowed_to_send:
-                    print(f"🛑 New lead batch size limit of {allowed_to_send} reached.")
-                    break
-                    
-                # Determine SMTP Host based on custom domain vs gmail
-                smtp_host = "smtp.gmail.com" if ashwani_email.lower().endswith("@gmail.com") else "smtppro.zoho.in"
-                print(f"⚡ Connecting to {smtp_host} as Ashwani ({ashwani_email}) to send response to NEW lead {lead['email']}...")
-                try:
-                    server = smtplib.SMTP(smtp_host, 587, timeout=15)
-                    server.starttls()
-                    server.login(ashwani_email, ashwani_password)
-                    
-                    send_pitch_email(server, lead["email"], lead["first_name"], ashwani_email, "Ashwani")
-                    server.quit()
-                    
-                    new_count += 1
-                    
-                    # Append immediately to the local log file in format: email,timestamp,sender
-                    timestamp_str = pd.Timestamp.now(tz='UTC').isoformat()
-                    with open(SENT_LOG_FILE, "a") as f:
-                        f.write(f"{lead['email']},{timestamp_str},{ashwani_email}\n")
-                        
-                    # 15-second delay between emails to mimic human behavior and protect domain reputation
-                    if new_count < allowed_to_send:
-                        time.sleep(15)
-                except smtplib.SMTPAuthenticationError as e:
-                    print(f"❌ Critical Authentication Failure for NEW leads sender {ashwani_email}: {e}. Aborting batch.")
-                    break
-                except Exception as e:
-                    print(f"⚠️ Failed to send to NEW lead {lead['email']}. Error: {e}")
-                    time.sleep(5)
-    else:
-        if not fresh_new_leads:
-            print("ℹ️ No new leads (>= May 1, 2026) to process.")
-        else:
-            print("⚠️ Skipping NEW leads because GMAIL_EMAIL or GMAIL_APP_PASSWORD secrets are not configured on GitHub yet.")
  
     # 6. Connect and Send Loop for HISTORICAL Leads (using Advisors account to steadily clear the backlog!)
     old_count = 0

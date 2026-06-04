@@ -17,7 +17,7 @@ APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
 # Import the HTML template and variables from the main auto_responder script
 from auto_responder import get_premium_pitch_html, CONSULTATION_LINK
 
-recipient = "jhsalcreativepeople@gmail.com"
+recipient = "jhasalcreativepeople@gmail.com"
 
 msg = MIMEMultipart('alternative')
 msg['From'] = f"Ashwani <{SENDER_EMAIL}>"

@@ -410,7 +410,7 @@ def main():
             dm_role = "Grant Consulting Partner"
  
         # Determine SMTP Host based on custom domain vs gmail
-        smtp_host = "smtppro.zoho.in" if "fsidigital.ca" in sender_email.lower() else "smtp.gmail.com"
+        smtp_host = "smtp.gmail.com" if sender_email.lower().endswith("@gmail.com") else "smtppro.zoho.in"
         
         print(f"⚡ Connecting to {smtp_host} as {sender_display_name} ({sender_email}) to send B2B email to {email}...")
         try:

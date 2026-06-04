@@ -499,7 +499,7 @@ def main():
                     break
                     
                 # Determine SMTP Host based on custom domain vs gmail
-                smtp_host = "smtppro.zoho.in" if "fsidigital.ca" in advisors_email.lower() else "smtp.gmail.com"
+                smtp_host = "smtp.gmail.com" if advisors_email.lower().endswith("@gmail.com") else "smtppro.zoho.in"
                 print(f"⚡ Connecting to {smtp_host} as Advisors ({advisors_email}) to send response to NEW lead {lead['email']}...")
                 try:
                     server = smtplib.SMTP(smtp_host, 587, timeout=15)
@@ -550,7 +550,7 @@ def main():
                     break
                     
                 # Determine SMTP Host based on custom domain vs gmail
-                smtp_host = "smtppro.zoho.in" if "fsidigital.ca" in ashwani_email.lower() else "smtp.gmail.com"
+                smtp_host = "smtp.gmail.com" if ashwani_email.lower().endswith("@gmail.com") else "smtppro.zoho.in"
                 print(f"⚡ Connecting to {smtp_host} as Ashwani ({ashwani_email}) to send response to HISTORICAL lead {lead['email']}...")
                 try:
                     server = smtplib.SMTP(smtp_host, 587, timeout=15)

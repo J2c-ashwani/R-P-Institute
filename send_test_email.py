@@ -28,9 +28,10 @@ msg['Subject'] = "Your grant eligibility results are ready"
 html_body = get_premium_pitch_html("Ashwani").replace("{CONSULTATION_LINK}", CONSULTATION_LINK)
 msg.attach(MIMEText(html_body, 'html'))
 
-print("⚡ Connecting to smtppro.zoho.in to send preview email...")
+smtp_host = "smtp.gmail.com" if SENDER_EMAIL.lower().endswith("@gmail.com") else "smtppro.zoho.in"
+print(f"⚡ Connecting to {smtp_host} to send preview email...")
 try:
-    server = smtplib.SMTP('smtppro.zoho.in', 587)
+    server = smtplib.SMTP(smtp_host, 587)
     server.starttls()
     server.login(SENDER_EMAIL, APP_PASSWORD)
     server.send_message(msg)

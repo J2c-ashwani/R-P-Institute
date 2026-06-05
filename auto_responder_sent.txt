@@ -71,3 +71,6 @@ ajw.wiedman@gmail.com,2026-06-04T21:01:47.482610+00:00,advisors@fsidigital.ca
 support@organic-abundance.com,2026-06-04T21:30:58.897292+00:00,advisors@fsidigital.ca
 miriammodeira@gmail.com,2026-06-04T21:31:17.324293+00:00,advisors@fsidigital.ca
 ymodeira@gmail.com,2026-06-04T21:31:35.443546+00:00,advisors@fsidigital.ca
+noura.rayan@healthnetcanada.ca,2026-06-05T13:01:16.179475+00:00,advisors@fsidigital.ca
+jraja01@outlook.com,2026-06-05T13:01:34.437132+00:00,advisors@fsidigital.ca
+bob@bo.com,2026-06-05T13:01:52.502757+00:00,advisors@fsidigital.ca

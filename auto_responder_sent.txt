@@ -107,3 +107,6 @@ fake_oasis@hotmail.com,2026-06-05T17:01:46.225953+00:00,advisors@fsidigital.ca
 iamirenec0@gmail.com,2026-06-05T17:30:56.860237+00:00,advisors@fsidigital.ca
 mr.mikesroofing@icloud.com,2026-06-05T17:31:14.720366+00:00,advisors@fsidigital.ca
 bailey@getquickies.com,2026-06-05T17:31:32.618633+00:00,advisors@fsidigital.ca
+lizgoona@gmail.com,2026-06-05T18:01:09.490223+00:00,advisors@fsidigital.ca
+ishikajain19@yahoo.com,2026-06-05T18:01:28.095189+00:00,advisors@fsidigital.ca
+coremittconstructions@gmail.com,2026-06-05T18:01:46.776559+00:00,advisors@fsidigital.ca

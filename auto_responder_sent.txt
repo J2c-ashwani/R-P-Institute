@@ -77,3 +77,6 @@ bob@bo.com,2026-06-05T13:01:52.502757+00:00,advisors@fsidigital.ca
 management@veilconcierge.ca,2026-06-05T13:31:02.380019+00:00,advisors@fsidigital.ca
 rubywhitefish@gmail.com,2026-06-05T13:31:20.867874+00:00,advisors@fsidigital.ca
 accounts@rvdays.ca,2026-06-05T13:31:38.863908+00:00,advisors@fsidigital.ca
+patrickpchin@gmail.com,2026-06-05T13:47:26.675641+00:00,advisors@fsidigital.ca
+djhunnocutt@gmail.com,2026-06-05T13:47:44.792184+00:00,advisors@fsidigital.ca
+a_oharper@bell.net,2026-06-05T13:48:02.925970+00:00,advisors@fsidigital.ca

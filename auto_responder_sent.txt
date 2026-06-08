@@ -173,3 +173,6 @@ dave@thundercarving.com,2026-06-08T17:01:50.624609+00:00,advisors@fsidigital.ca
 natascha@blissfulbookkeeping.ca,2026-06-08T17:31:04.628769+00:00,advisors@fsidigital.ca
 kmeloche82@gmail.com,2026-06-08T17:31:23.021100+00:00,advisors@fsidigital.ca
 uahmed08@gmail.com,2026-06-08T17:31:41.754812+00:00,advisors@fsidigital.ca
+pmorency01@gmail.com,2026-06-08T18:01:09.453758+00:00,advisors@fsidigital.ca
+yberman@gmail.com,2026-06-08T18:01:28.275881+00:00,advisors@fsidigital.ca
+zumar.portera@inboxorigin.com,2026-06-08T18:01:46.990446+00:00,advisors@fsidigital.ca

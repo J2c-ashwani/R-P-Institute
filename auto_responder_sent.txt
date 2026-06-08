@@ -155,3 +155,6 @@ n.mehta@vochella.com,2026-06-08T14:31:44.257895+00:00,advisors@fsidigital.ca
 uzojikeme@gmail.com,2026-06-08T15:01:15.977826+00:00,advisors@fsidigital.ca
 info@aurorarobotics.ca,2026-06-08T15:01:34.310188+00:00,advisors@fsidigital.ca
 moira@vapendama.com,2026-06-08T15:01:52.714951+00:00,advisors@fsidigital.ca
+jade.horinga@gmail.com,2026-06-08T15:31:08.683285+00:00,advisors@fsidigital.ca
+jenny@thejafoundation.org,2026-06-08T15:31:27.570001+00:00,advisors@fsidigital.ca
+deep030899@gmail.com,2026-06-08T15:31:46.419651+00:00,advisors@fsidigital.ca
